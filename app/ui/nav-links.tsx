@@ -15,6 +15,11 @@ const links = [
     href: '/posts',
     icon: DocumentDuplicateIcon,
   },
+  {
+    name: 'Profile',
+    href: '/profile',
+    icon: UserGroupIcon,
+  },
 ];
 
 export default function NavLinks() {

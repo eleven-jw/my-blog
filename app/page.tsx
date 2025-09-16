@@ -1,7 +1,88 @@
 import Bio from "@/app/ui/home/bio"
-import Card from "@/app/ui/home/card"
+import OverView from "@/app/ui/home/overview"
 import RecentPosts from "@/app/ui/home/rencent-posts"
 import { Suspense } from "react";
+import { StatItem } from "@/app/ui/home/overview";
+import { ColumnDef } from "@tanstack/react-table";
+
+// TODO fetch data
+const defaultItems: StatItem[] = [
+  { label: 'Total Views', value: '23,569', change: '+37', changeVariant: 'up' },
+  { label: 'Total Renenue', value: '¥ 0' },
+  { label: 'Follows', value: 181 },
+  { label: 'Stars', value: 352 },
+];
+
+type Article = {
+  title: string;
+  impressions: number;
+  reads: number;
+  comments: number;
+  likes: number;
+  saves: number;
+};
+
+const columns: ColumnDef<Article>[] = [
+  { accessorKey: "title", header: "Title" },
+  { accessorKey: "impressions", header: "Impressions" },
+  { accessorKey: "reads", header: "Reads" },
+  { accessorKey: "comments", header: "Comments" },
+  { accessorKey: "likes", header: "Likes" },
+  { accessorKey: "saves", header: "Saves" },
+];
+
+const articles: Article[] = [
+  {
+    title: "github上react开箱即用的模板 (仅供自己...",
+    impressions: 1315,
+    reads: 1028,
+    comments: 0,
+    likes: 8,
+    saves: 14,
+  },
+  {
+    title: "npm fund 命令的作用",
+    impressions: 2540,
+    reads: 912,
+    comments: 0,
+    likes: 4,
+    saves: 1,
+  },
+  {
+    title: "npm fund 命令的作用",
+    impressions: 2540,
+    reads: 912,
+    comments: 0,
+    likes: 4,
+    saves: 1,
+  },
+  {
+    title: "npm fund 命令的作用",
+    impressions: 2540,
+    reads: 912,
+    comments: 0,
+    likes: 4,
+    saves: 1,
+  },
+  {
+    title: "npm fund 命令的作用",
+    impressions: 2540,
+    reads: 912,
+    comments: 0,
+    likes: 4,
+    saves: 1,
+  },
+  {
+    title: "npm fund 命令的作用",
+    impressions: 2540,
+    reads: 912,
+    comments: 0,
+    likes: 4,
+    saves: 1,
+  },
+  
+];
+
 export default function Home() {
   return <div>
     <div>
@@ -9,14 +90,14 @@ export default function Home() {
         <Bio />
       </Suspense>
     </div>
-    <div>
+    <div className="my-6">
       <Suspense fallback={<div>Loading...</div>}>
-        <Card />
+        <OverView items={defaultItems} />
       </Suspense>
     </div>
-    <div>
+    <div className="my-6">
       <Suspense fallback={<div>Loading...</div>}>
-        <RecentPosts />
+        <RecentPosts data={articles} columns={columns} />
       </Suspense>
     </div>
   </div>;
