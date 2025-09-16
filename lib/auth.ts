@@ -10,3 +10,7 @@ export function requireRole(user: any, role: "ADMIN" | "AUTHOR" | "USER") {
     throw new Error("没有权限访问");
   }
 }
+export async function isLoggedIn() {
+  const user = await getUser();
+  return !!user;
+}
