@@ -19,14 +19,18 @@ import {
 } from "@tanstack/react-table";
 
 
+type OnRowClick<TData> = (row: TData) => void;
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onRowClick?: OnRowClick<TData>;
 }
 
 export default function DataTable<TData, TValue>({
   columns,
   data,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -60,6 +64,8 @@ export default function DataTable<TData, TValue>({
                     <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={() => onRowClick?.(row.original)}
                     >
                     {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="px-4 py-3">
