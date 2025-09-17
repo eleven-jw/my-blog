@@ -2,10 +2,11 @@
 import Bio from "@/app/ui/home/bio"
 import OverView from "@/app/ui/home/overview"
 import RecentPosts from "@/app/ui/home/rencent-posts"
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { StatItem } from "@/app/ui/home/overview";
 import { ColumnDef } from "@tanstack/react-table";
 import router from "next/router";
+import { useEffect } from "react";
 
 // TODO fetch data
 const defaultItems: StatItem[] = [
@@ -88,10 +89,36 @@ const handleRowClick = (article: Article) => {
 };
 
 export default function Home() {
+  const [user, setUser] = useState<any>(null); // 用户信息
+   // 加载数据
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+
+        const [userRes] = await Promise.all([
+          fetch('/api/users'),
+        ]);
+
+        if (!userRes.ok) throw new Error('用户信息获取失败');
+
+        const userData = await userRes.json();
+
+        if (userData.code !== 200) throw new Error(userData.message);
+
+        setUser(userData.data);
+      } catch (err) {
+        console.error('数据加载失败:', err);
+      } finally {
+      }
+    };
+
+    loadData();
+  }, []);
+
   return <div>
     <div>
       <Suspense fallback={<div>Loading...</div>}>
-        <Bio />
+        <Bio userInfo={user}/>
       </Suspense>
     </div>
     <div className="my-6">

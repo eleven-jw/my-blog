@@ -13,20 +13,22 @@ enum Role {
   ADMIN
 }
 
-/* NextAuth 兼容模型（可选，保留便于集成） */
+/**
+ * NextAuth 兼容模型（可选，保留便于集成）
+ */
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? 
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id])
 
@@ -50,69 +52,81 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-/* 应用核心模型 */
+/**
+ * 应用核心模型
+ */
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role      @default(USER)
-  posts         Post[]
-  comments      Comment[]
-  favorites    UserFavorite[]
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?
+  image             String?
+  role              Role               @default(USER)
+  posts             Post[]
+  comments          Comment[]
+  favorites         UserFavorite[]
+  accounts          Account[]
+  sessions          Session[]
+  postCount         Int                @default(0)
+  fansCount         Int                @default(0)
+  followsCount      Int                @default(0)
+  starsCount        Int                @default(0)
+  totalViews        Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  UserFollowerDaily UserFollowerDaily?
+
   @@index([name]) // 加速用户名查询（登录/查找用户）
-  @@index([email])    // 加速邮箱查询（找回密码）
+  @@index([email]) // 加速邮箱查询（找回密码）
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  slug        String   @unique
+  id          String         @id @default(cuid())
+  slug        String         @unique
   title       String
   excerpt     String?
-  content     String   // 存 HTML / Markdown / Tiptap JSON（按你的实现定）
-  status      String   @default("draft") // draft|published|scheduled
+  content     String // 存 HTML / Markdown / Tiptap JSON（按你的实现定）
+  status      String         @default("draft") // draft|published|scheduled
   publishedAt DateTime?
-  author      User     @relation(fields: [authorId], references: [id])
+  author      User           @relation(fields: [authorId], references: [id])
   authorId    String
-  tags        Tag[]    // 隐式多对多：不要加 @relation references
-  views       Int      @default(0)
-  likes       Int      @default(0)
+  tags        Tag[] // 隐式多对多：不要加 @relation references
+  views       Int            @default(0)
+  likes       Int            @default(0)
   comments    Comment[] // <- 补上对应关系（一对多）
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   favorites   UserFavorite[]
-  @@index([authorId])       // 加速按作者查询文章（用户文章列表）
-  @@index([status])         // 加速按状态过滤（如仅展示已发布文章）
-  @@index([createdAt])      // 加速按发布时间排序（最新/最早）
-  @@index([views])          // 加速按访问量排序（热门文章）
+
+  @@index([authorId]) // 加速按作者查询文章（用户文章列表）
+  @@index([status]) // 加速按状态过滤（如仅展示已发布文章）
+  @@index([createdAt]) // 加速按发布时间排序（最新/最早）
+  @@index([views]) // 加速按访问量排序（热门文章）
 }
 
 model UserFollowerDaily {
-  id        String   @id @default(uuid())
-  userId    String   @unique // 关联 User.id（按天分区，同一用户每天一条）
-  date      Date     @unique // 统计日期（格式：YYYY-MM-DD）
-  count     Int      @default(0) // 当日粉丝数
-  createdAt DateTime @default(now())
+  id               String   @id @default(uuid())
+  userId           String   @unique // 关联 User.id（按天分区，同一用户每天一条）
+  date             String   @unique // 统计日期（格式：YYYY-MM-DD）
+  viewsIncrement   Int      @default(0) // 当日总浏览增量（今日 - 昨日）
+  followsIncrement Int      @default(0) // 当日关注增量
+  starsIncrement   Int      @default(0) // 当日点赞增量
+  createdAt        DateTime @default(now())
 
-  // 关联：用户
-  user      User     @relation(fields: [userId], references: [id])
+  // 关联：用户（一对一）
+  user User @relation(fields: [userId], references: [id])
 }
 
 model UserFavorite {
   id        String   @id @default(uuid())
-  userId    String   // 关联 User.id（收藏用户）
-  articleId String   // 关联 Article.id（被收藏文章）
+  userId    String // 关联 User.id（收藏用户）
+  postId    String // 关联 Post.id（被收藏文章）
   createdAt DateTime @default(now()) // 收藏时间
 
-  @@unique([userId, articleId])
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
 
-  user      User     @relation(fields: [userId], references: [id])
-  post   Post  @relation(fields: [postId], references: [id])
+  @@unique([userId, postId])
 }
 
 model Tag {
@@ -122,28 +136,28 @@ model Tag {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  post      Post     @relation(fields: [postId], references: [id])
+  id        String        @id @default(cuid())
+  post      Post          @relation(fields: [postId], references: [id])
   postId    String
-  author    User?    @relation(fields: [authorId], references: [id])
+  author    User?         @relation(fields: [authorId], references: [id])
   authorId  String?
-  replies     Comment[] @relation("CommentReplies", fields: [id], references: [parentId])
-  parentComment Comment? @relation("CommentReplies", fields: [parentId], references: [id])
   content   String
   status    CommentStatus @default(ACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
   @@unique([authorId, postId, content])
-  @@index([postId])    // 加速按文章查询评论（文章详情页）
-  @@index([authorId])     // 加速按作者查询评论（用户评论历史）
-  @@index([createdAt])    // 加速按时间排序（最新/最早评论）
-  @@index([status])       // 加速过滤状态（如仅展示正常评论）
+  @@index([postId]) // 加速按文章查询评论（文章详情页）
+  @@index([authorId]) // 加速按作者查询评论（用户评论历史）
+  @@index([createdAt]) // 加速按时间排序（最新/最早评论）
+  @@index([status]) // 加速过滤状态（如仅展示正常评论）
 }
 
 enum CommentStatus {
-  ACTIVE   // 正常显示
-  DELETED  // 已删除（逻辑删除，保留记录但不展示）
+  ACTIVE // 正常显示
+  DELETED // 已删除（逻辑删除，保留记录但不展示）
 }
+
 enum PostStatus {
   DRAFT
   PUBLISHED

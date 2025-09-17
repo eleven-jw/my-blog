@@ -38,6 +38,9 @@ export default function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  if(!data) {
+    return <div>暂无数据</div>
+  }
   return (
     <Card className="rounded-xl border-gray-200">
       <CardContent className="p-6">
