@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET!,
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -25,6 +26,7 @@ export const authOptions = {
         if (user && user.password === credentials.password) {
           return user;
         }
+        console.log('Invalid credentials or user not found');
         return null;
       },
     }),
@@ -33,6 +35,20 @@ export const authOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    authorized({auth, request:{nextUrl}}) {
+        const isLoggedIn = !!auth?.user;
+        const isOnDashboard = nextUrl.pathname.startsWith('/');
+        if(isOnDashboard) {
+            if(isLoggedIn) {
+                return true;
+            }
+            return false;
+        } else if(isLoggedIn) {
+            return Response.redirect(new URL('/', nextUrl));
+        }
+          
+        return true;
+    },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub;

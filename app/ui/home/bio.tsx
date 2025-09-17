@@ -3,16 +3,8 @@ import {
   Card,
   CardContent
 } from "@/components/ui/card"
+import type { BioProps } from '@/types/use';
 
-interface UserInfo {
-  name: string;
-  fansCount: number;
-  postCount: number;
-}
-
-interface BioProps {
-  userInfo: UserInfo;
-}
 
 export default function Bio({userInfo}: BioProps) {
   return (

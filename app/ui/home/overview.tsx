@@ -3,17 +3,7 @@ import {
   CardContent
 } from "@/components/ui/card"
 import { cn } from "@/lib/utils";
-
-export type StatItem = {
-  label: string;
-  value: string | number;
-  change?: string;
-  changeVariant?: "up" | "down";
-};
-
-type Props = {
-  items: StatItem[];
-};
+import type { Props } from "@/types/home";
 
 export default function StatsOverview({ items }: Props) {
   return (
