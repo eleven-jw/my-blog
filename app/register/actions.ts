@@ -21,7 +21,7 @@ export async function registerAction(formData: FormData) {
 
   const parsed = RegisterSchema.safeParse(data);
   if (!parsed.success) {
-    const firstError = parsed.error.errors[0]?.message ?? "参数错误";
+    const firstError = parsed.error.errors[0]?.message ?? "wrong params";
     // redirect to page register with errorinfo
     redirect(`/register?error=${encodeURIComponent(String(firstError))}`);
   }
@@ -33,7 +33,7 @@ export async function registerAction(formData: FormData) {
     redirect(`/register?error=${encodeURIComponent("this email is already exist")}`);
   }
 
-  // hash
+  // hash password
   const hashed = await bcrypt.hash(password, 10);
   await prisma.user.create({
     data: {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/route';
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma";
 import type { Post } from '@prisma/client'; // Prisma 生成的文章类型
 

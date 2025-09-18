@@ -20,7 +20,7 @@ export default function RegisterPage({ searchParams }: { searchParams?: Record<s
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
               <input id="password" name="password" type="password" required minLength={8} className="mt-1 block w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400" />
-              <p className="text-xs text-gray-400 mt-1">密码至少 8 位。</p>
+              <p className="text-xs text-gray-400 mt-1">At lease 8 charactars.</p>
             </div>
 
             <div>

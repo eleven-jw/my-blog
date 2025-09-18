@@ -14,6 +14,7 @@ import Link from 'next/link';
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [remember, setRemember] = useState(false); // 记住我状态
     const [error, setError] = useState<string | null>(null);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -21,13 +22,14 @@ export default function LoginPage() {
         setError(null);
         setLoading(true);
 
-        const fd = new FormData(e.currentTarget);
-        const email = (fd.get("email") as string) ?? "";
-        const password = (fd.get("password") as string) ?? "";
+        const data = new FormData(e.currentTarget);
+        const email = (data.get("email") as string) ?? "";
+        const password = (data.get("password") as string) ?? "";
 
         // usr next-auth signIn with credentials
         const res = await signIn("credentials", {
             redirect: false,
+            remember,
             email,
             password,
         });
@@ -120,7 +122,13 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <input id="remember" name="remember" type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+                    <input
+                      id="remember"
+                      name="remember"
+                      type="checkbox" 
+                      className="h-4 w-4 rounded border-gray-300"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}/>
                     <label htmlFor="remember" className="text-sm">Remember me</label>
                   </div>
 
