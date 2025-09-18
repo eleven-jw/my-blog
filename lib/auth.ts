@@ -182,6 +182,23 @@ export const authOptions = {
 
       return token;
     },
+    async signOut({ token, session, req, res }) {
+        if (session?.user?.id) {
+            // 清除 HttpOnly Cookie（关键！）
+            res.clearCookie('next-auth.session-token', {
+            path: '/',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            sameSite: 'lax',
+        });
+
+        // 清理数据库会话记录
+        await prisma.session.deleteMany({
+            where: { userId: session.user.id },
+        });
+        }
+        return;
+    },
   },
   pages: {
     signIn: "/login",
