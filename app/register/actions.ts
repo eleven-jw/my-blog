@@ -27,6 +27,7 @@ export async function registerAction(formData: FormData) {
   }
 
   const { email, password } = parsed.data;
+  const image = 'avatar.jpg';
 
   const exist = await prisma.user.findUnique({ where: { email } });
   if (exist) {
@@ -38,6 +39,7 @@ export async function registerAction(formData: FormData) {
   await prisma.user.create({
     data: {
       email,
+      image,
       password: hashed,
       name: email.split("@")[0],
     },

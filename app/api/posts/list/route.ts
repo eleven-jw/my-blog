@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma";
-import type { Post } from '@prisma/client'; // Prisma 生成的文章类型
+import type { Post } from '@prisma/client';
 
-// 定义文章列表响应类型（含分页信息）
 type ArticleListResponse = {
   code: number;
   message: string;
@@ -16,7 +15,6 @@ type ArticleListResponse = {
   };
 };
 
-// 定义文章详情响应类型
 type ArticleDetailResponse = {
   code: number;
   message: string;
@@ -27,20 +25,19 @@ export async function GET(
   request: Request,
   { params }: { params: { id?: string } }
 ) {
+  console.log('request', request);
+  console.log('params', params);
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
-      { code: 401, message: '未登录' },
+      { code: 401, message: 'please login' },
       { status: 401 }
     );
   }
 
-  // 处理两种 GET 场景：列表查询 或 单篇文章详情
   if (params.id) {
-    // 场景 1：获取单篇文章详情（如 /api/articles/123）
     return getArticleDetail(params.id, session.user.id);
   } else {
-    // 场景 2：查询文章列表（如 /api/articles?page=1&size=10）
     return getArticleList(request, session.user.id);
   }
 }
@@ -147,15 +144,11 @@ export async function DELETE(
   }
 }
 
-// ------------------------------
-// 辅助函数：获取文章列表（分页 + 过滤）
-// ------------------------------
 async function getArticleList(
   request: Request,
   userId: string
 ): Promise<ArticleListResponse> {
   try {
-    // 解析查询参数
     const searchParams = new URL(request.url).searchParams;
     const page = parseInt(searchParams.get('page') || '1', 10) || 1;
     const size = parseInt(searchParams.get('size') || '10', 10) || 10;
@@ -233,9 +226,6 @@ async function getArticleList(
   }
 }
 
-// ------------------------------
-// 辅助函数：获取单篇文章详情
-// ------------------------------
 async function getArticleDetail(
   articleId: string,
   userId: string
@@ -259,7 +249,7 @@ async function getArticleDetail(
 
     if (!article) {
       return NextResponse.json(
-        { code: 404, message: '文章不存在' },
+        { code: 404, message: 'article not exit' },
         { status: 404 }
       );
     }
@@ -271,7 +261,7 @@ async function getArticleDetail(
     });
   } catch (err) {
     return NextResponse.json(
-      { code: 500, message: '服务器错误' },
+      { code: 500, message: 'server error' },
       { status: 500 }
     );
   }

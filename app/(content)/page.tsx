@@ -8,6 +8,7 @@ import router from "next/router";
 import { useEffect } from "react";
 import { UserInfo } from "@/types/use";
 import { StatItem } from "@/types/home";
+// import { useSession } from "next-auth/react";
 
 // TODO fetch data
 // const defaultItems: StatItem[] = [
@@ -97,18 +98,24 @@ export default function Home() {
   });
   const [states, setStates] = useState<StatItem[]>([]);
   const [posts, setPosts] = useState<Article[]>([]);
-
+  // const { data: session, status } = useSession();
   
+  // useEffect(() => {
+  //   if (status === 'unauthenticated') {
+  //     router.push('/login');
+  //   }
+  // }, [status, router]);
   useEffect(() => {
     const loadData = async () => {
       try {
-
         const [userRes, statsRes, postsRes] = await Promise.all([
           fetch('/api/users'),
           fetch('/api/states'),
           fetch('/api/posts/list')
         ]);
 
+        console.log('userRes', await userRes.json());
+        console.log('statsRes', await statsRes.json());
         if (!userRes.ok) throw new Error('Failed to get user info');
         if (!statsRes.ok) throw new Error('Failed to get states');
         if (!postsRes.ok) throw new Error('Failed to get posts');
@@ -120,7 +127,12 @@ export default function Home() {
         if (stateData.code !== 200) throw new Error(stateData.message);
         if (postsData.code !== 200) throw new Error(postsData.message);
 
-        setUser(userData.data);
+        setUser({
+          image: '',
+          name: '',
+          ...userData.data
+        });
+        console.log(Array.isArray(stateData.data) ? stateData.data : []);
         setStates(Array.isArray(stateData.data) ? stateData.data : []);
         setPosts(postsData.data)
       } catch (err) {

@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setError(null);
+        setError('');
         setLoading(true);
 
         const data = new FormData(e.currentTarget);
@@ -42,6 +42,7 @@ export default function LoginPage() {
         }
 
         if (res.error) {
+            console.log('res.error', res.error); // error from autorize
             setError(res.error || "invalidate username or password");
             return;
         }
@@ -119,6 +120,11 @@ export default function LoginPage() {
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" name="password" type="password" placeholder="••••••••" required />
                 </div>
+                {error && (
+                  <div className="mb-2 p-2 bg-red-100 text-red-500 rounded-md text-sm">
+                    {error}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

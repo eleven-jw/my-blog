@@ -41,7 +41,7 @@ export const authOptions = {
 
         if (!user) {
           console.log('no this user');
-          return null;
+          throw new Error('no this user');
         }
 
         const passwordMatch = await bcrypt.compare(
@@ -51,11 +51,12 @@ export const authOptions = {
 
         if (!passwordMatch) {
           console.log('wrong password');
-          return null;
+          throw new Error('wrong password');
         }
 
-        if (credentials?.remember) {
-          const refreshToken = process.env. REFRESH_TOKEN_SECRET;
+        if (credentials?.remember === true) {
+          console.log(credentials?.remember);
+          const refreshToken = process.env.REFRESH_TOKEN_SECRET;
           const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30days
 
           await prisma.session.create({
@@ -82,6 +83,7 @@ export const authOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          remember: credentials?.remember === true, 
         };
       },
     }),
@@ -102,7 +104,7 @@ export const authOptions = {
       console.log('account', account);
       console.log('profile', profile);
       console.log('email', email);
-      console.log('credentials', email);
+      console.log('credentials', credentials);
       return true;
     },
     authorized({auth, request:{nextUrl}}) {

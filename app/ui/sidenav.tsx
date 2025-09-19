@@ -9,15 +9,14 @@ import { useRouter } from "next/navigation";
 export default function SideNav() {
   const router = useRouter();
   const handleSignOut = async() => {
-    console.log('handleSignOut', handleSignOut)
+    console.log('handleSignOut')
     try {
       const data = await signOut({
-        redirect: true,
+        redirect: false,
         callbackUrl: "/login",
       });
       console.log('data', data);
-      console.log('handleSignOut', handleSignOut)
-      // router.push("/login");
+      router.push("/login");
     } catch (err) {
       console.error("failed to sign out:", err);
     }
