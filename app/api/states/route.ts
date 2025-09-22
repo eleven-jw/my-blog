@@ -1,4 +1,3 @@
-// app/api/stats/dashboard/route.ts
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from "@/lib/auth"
@@ -9,7 +8,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
-      { code: 401, message: '未登录' },
+      { code: 401, message: 'Please login' },
       { status: 401 }
     );
   }
@@ -41,26 +40,26 @@ export async function GET() {
         {
             label: 'Total Views',
             value: user.totalViews,
-            change: yesterdayStat?.viewsIncrement ? `+${yesterdayStat.viewsIncrement}` : 'No Change Yesterday',
+            change: yesterdayStat?.viewsIncrement ? `+${yesterdayStat.viewsIncrement}` : null,
             changeVariant: yesterdayStat?.viewsIncrement ? "up" : "down"    
         },
         {
             label: 'Follows',
             value: user.followsCount,
-            change: yesterdayStat?.followsIncrement ? `+${yesterdayStat.followsIncrement}` : 'No Change Yesterday',
+            change: yesterdayStat?.followsIncrement ? `+${yesterdayStat.followsIncrement}` : null,
             changeVariant: yesterdayStat?.followsIncrement ? "up" : "down"
         },
         {
             label: 'Stars',
             value: user.starsCount,
-            change: yesterdayStat?.starsIncrement ? `+${yesterdayStat.starsIncrement}` : 'No Change Yesterday',
+            change: yesterdayStat?.starsIncrement ? `+${yesterdayStat.starsIncrement}` : null,
             changeVariant: yesterdayStat?.starsIncrement ? "up" : "down"
         }
     ]
     });
   } catch (err) {
     return NextResponse.json(
-      { code: 500, message: '服务器错误' },
+      { code: 500, message: 'Server error' },
       { status: 500 }
     );
   }

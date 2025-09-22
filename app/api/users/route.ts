@@ -8,7 +8,7 @@ export async function GET() {
   console.log('session', session);
   if (!session?.user?.id) {
     return NextResponse.json(
-      { code: 401, message: '未登录' },
+      { code: 401, message: 'Please login' },
       { status: 401 }
     );
   }
@@ -34,7 +34,7 @@ export async function GET() {
   } catch (err) {
     console.log('err', err);
     return NextResponse.json(
-      { code: 500, message: '服务器错误' },
+      { code: 500, message: 'Server error' },
       { status: 500 }
     );
   }

@@ -37,54 +37,6 @@ const columns: ColumnDef<Article>[] = [
   { accessorKey: "saves", header: "Saves" },
 ];
 
-// const articles: Article[] = [
-//   {
-//     id: "1",
-//     title: "github上react开箱即用的模板 (仅供自己...",
-//     impressions: 1315,
-//     reads: 1028,
-//     comments: 0,
-//     likes: 8,
-//     saves: 14,
-//   },
-//   {
-//     id: "2",
-//     title: "npm fund 命令的作用",
-//     impressions: 2540,
-//     reads: 912,
-//     comments: 0,
-//     likes: 4,
-//     saves: 1,
-//   },
-//   {
-//     id: "3",
-//     title: "npm fund 命令的作用",
-//     impressions: 2540,
-//     reads: 912,
-//     comments: 0,
-//     likes: 4,
-//     saves: 1,
-//   },
-//   {
-//     id: "4",
-//     title: "npm fund 命令的作用",
-//     impressions: 2540,
-//     reads: 912,
-//     comments: 0,
-//     likes: 4,
-//     saves: 1,
-//   },
-//   {
-//     id: "5",
-//     title: "npm fund 命令的作用",
-//     impressions: 2540,
-//     reads: 912,
-//     comments: 0,
-//     likes: 4,
-//     saves: 1,
-//   }
-// ];
-
 const handleRowClick = (article: Article) => {
   console.log("click:", article);
   router.push(`/posts/${article.id}`);
@@ -114,8 +66,6 @@ export default function Home() {
           fetch('/api/posts/list')
         ]);
 
-        console.log('userRes', await userRes.json());
-        console.log('statsRes', await statsRes.json());
         if (!userRes.ok) throw new Error('Failed to get user info');
         if (!statsRes.ok) throw new Error('Failed to get states');
         if (!postsRes.ok) throw new Error('Failed to get posts');
@@ -123,6 +73,7 @@ export default function Home() {
         const userData = await userRes.json();
         const stateData = await statsRes.json();
         const postsData = await postsRes.json();
+        console.log('postsData', postsData);
         if (userData.code !== 200) throw new Error(userData.message);
         if (stateData.code !== 200) throw new Error(stateData.message);
         if (postsData.code !== 200) throw new Error(postsData.message);
@@ -132,9 +83,9 @@ export default function Home() {
           name: '',
           ...userData.data
         });
-        console.log(Array.isArray(stateData.data) ? stateData.data : []);
+        console.log('states:', Array.isArray(stateData.data) ? stateData.data : []);
         setStates(Array.isArray(stateData.data) ? stateData.data : []);
-        setPosts(postsData.data)
+        // setPosts(postsData.data)
       } catch (err) {
         console.error('数据加载失败:', err);
       } finally {
