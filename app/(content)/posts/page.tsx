@@ -9,6 +9,7 @@ import Search, {
 import CreatePostButton from "@/app/ui/post/Button"
 import ConfirmDialog from "@/app/ui/post/Dialog"
 import PostTable, { PostListItem } from "@/app/ui/post/PostTable"
+import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 
 const defaultFilters: PostFilterValues = {
   title: '',
@@ -216,6 +217,12 @@ export default function PostsPage() {
 
   return (
     <div className="space-y-6">
+      <PostBreadcrumb
+        items={[
+          { label: '首页', href: '/' },
+          { label: '文章管理' },
+        ]}
+      />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">文章管理</h1>
         <CreatePostButton />

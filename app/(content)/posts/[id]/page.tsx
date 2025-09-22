@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 
@@ -15,8 +16,8 @@ function formatDate(value: Date) {
 }
 
 type PageProps = {
-  params: Promise<{ id: string }>
-  searchParams?: Promise<URLSearchParams>;
+  params: { id: string }
+  searchParams?: { from?: string }
 }
 
 export default async function PostDetailPage({ params, searchParams }: PageProps) {
@@ -38,9 +39,9 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
   }
 
 
-  const { id } = await params;
+  const { id } = params
   const post = await prisma.post.findUnique({
-    where: { id: id },
+    where: { id },
     select: {
       id: true,
       title: true,
@@ -78,11 +79,19 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
     notFound()
   }
 
-  const resolvedParams = await searchParams;
-  const backHref = resolvedParams?.from === 'explore' ? '/explore' : '/posts'
+  const isFromExplore = searchParams?.from === 'explore'
+  const parentHref = isFromExplore ? '/explore' : '/posts'
+  const parentLabel = isFromExplore ? '文章广场' : '文章管理'
+  const backHref = parentHref
+  const breadcrumbItems = [
+    { label: '首页', href: '/' },
+    { label: parentLabel, href: parentHref },
+    { label: post.title },
+  ]
 
   return (
     <div className="space-y-6">
+      <PostBreadcrumb items={breadcrumbItems} />
       <div className="flex items-center justify-between gap-3">
         <Link
           href={backHref}
