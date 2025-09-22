@@ -1,9 +1,16 @@
 export interface UserInfo {
-  name: string;
-  fansCount: number;
-  postCount: number;
+  id?: string
+  name: string
+  email?: string | null
+  image?: string | null
+  fansCount: number
+  postCount: number
+  followsCount?: number
+  starsCount?: number
+  totalViews?: number
+  createdAt?: string | Date
 }
 
 export interface BioProps {
-  userInfo: UserInfo;
+  userInfo: UserInfo
 }

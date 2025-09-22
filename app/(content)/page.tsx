@@ -4,7 +4,7 @@ import OverView from "@/app/ui/home/overview"
 import RecentPosts from "@/app/ui/home/rencent-posts"
 import { Suspense, useState } from "react";
 import type { DataTableColumnDef } from "@/app/ui/common/data-table";
-import router from "next/router";
+import { useRouter } from 'next/navigation'
 import { useEffect } from "react";
 import { UserInfo } from "@/types/use";
 import { StatItem } from "@/types/home";
@@ -46,12 +46,9 @@ const columns: DataTableColumnDef<Article, unknown>[] = [
   { accessorKey: "saves", header: "Saves" },
 ];
 
-const handleRowClick = (article: Article) => {
-  console.log("click:", article);
-  router.push(`/posts/${article.id}`);
-};
 
 export default function Home() {
+  const router = useRouter();
   const [user, setUser] = useState<UserInfo>({
     name: '',
     fansCount: 0,
@@ -61,6 +58,10 @@ export default function Home() {
   const [posts, setPosts] = useState<Article[]>([]);
   // const { data: session, status } = useSession();
   
+  const handleRowClick = (article: Article) => {
+    router.push(`/posts/${article.id}`);
+  };
+
   // useEffect(() => {
   //   if (status === 'unauthenticated') {
   //     router.push('/login');

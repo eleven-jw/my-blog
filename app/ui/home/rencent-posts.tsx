@@ -7,7 +7,6 @@ import {
 import DataTable, {
   type DataTableColumnDef,
 } from "@/app/ui/common/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
 
 type OnRowClick<TData> = (row: TData) => void
 
@@ -40,4 +39,4 @@ export default function RecentPosts<TData, TValue>({
   )
 }
 
-export type RecentPostsColumnDef<TData, TValue> = ColumnDef<TData, TValue>
+export type RecentPostsColumnDef<TData, TValue> = DataTableColumnDef<TData, TValue>

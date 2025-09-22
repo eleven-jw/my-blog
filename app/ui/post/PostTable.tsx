@@ -155,6 +155,7 @@ export default function PostTable({
         headerClassName="bg-gray-50"
         bodyClassName="text-sm text-gray-600"
         rowClassName="hover:bg-gray-50"
+        onRowClick={(row) => onView(row.id)}
       />
       <div className="flex flex-col gap-4 border-t border-gray-100 p-4 md:flex-row md:items-center md:justify-between">
         <span className="text-sm text-gray-600">

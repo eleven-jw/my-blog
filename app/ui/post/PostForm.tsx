@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import RichTextEditor from "@/app/ui/post/RichTextEditor"
 
 type PostFormValues = {
   title: string
@@ -25,8 +26,8 @@ const statusOptions: Array<{ value: string; label: string }> = [
 export default function PostForm({ postId, initialValues }: PostFormProps) {
   const router = useRouter()
   const [title, setTitle] = useState(initialValues?.title ?? '')
-  const [content, setContent] = useState(initialValues?.content ?? '')
-  const [status, setStatus] = useState(initialValues?.status ?? 'draft')
+  const [content, setContent] = useState(initialValues?.content ?? '<p></p>')
+  const [status, setStatus] = useState(initialValues?.status ?? 'published')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -40,9 +41,14 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
     setSuccess(null)
 
     try {
+      const plainText = content.replace(/<[^>]*>/g, '').trim()
+      if (!plainText) {
+        throw new Error('正文不能为空')
+      }
+
       const payload: Record<string, string> = {
         title: title.trim(),
-        content: content.trim(),
+        content,
         status,
       }
 
@@ -118,17 +124,8 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700" htmlFor="post-content">
-            正文
-          </label>
-          <textarea
-            id="post-content"
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            placeholder="请输入文章内容"
-            className="min-h-[240px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            required
-          />
+          <label className="text-sm font-medium text-gray-700">正文</label>
+          <RichTextEditor value={content} onChange={setContent} placeholder="请输入文章内容" />
         </div>
 
         {error && (

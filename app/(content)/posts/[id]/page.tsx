@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 
@@ -14,10 +15,11 @@ function formatDate(value: Date) {
 }
 
 type PageProps = {
-  params: { id: string }
+  params: Promise<{ id: string }>
+  searchParams?: Promise<URLSearchParams>;
 }
 
-export default async function PostDetailPage({ params }: PageProps) {
+export default async function PostDetailPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     redirect(`/login?callbackUrl=${encodeURIComponent(`/posts/${params.id}`)}`)
@@ -35,8 +37,10 @@ export default async function PostDetailPage({ params }: PageProps) {
     notFound()
   }
 
+
+  const { id } = await params;
   const post = await prisma.post.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     select: {
       id: true,
       title: true,
@@ -74,25 +78,29 @@ export default async function PostDetailPage({ params }: PageProps) {
     notFound()
   }
 
+  const resolvedParams = await searchParams;
+  const backHref = resolvedParams?.from === 'explore' ? '/explore' : '/posts'
+
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={backHref}
+          className="inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100"
+        >
+          ← 返回
+        </Link>
         <h1 className="text-3xl font-semibold text-gray-900">{post.title}</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          状态：{post.status} · 作者：{post.author?.name ?? '未知作者'} · 创建于 {formatDate(post.createdAt)} · 更新于 {formatDate(post.updatedAt)}
-        </p>
       </div>
+      <p className="text-sm text-gray-500">
+        状态：{post.status} · 作者：{post.author?.name ?? '未知作者'} · 创建于 {formatDate(post.createdAt)} · 更新于 {formatDate(post.updatedAt)}
+      </p>
 
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <article className="prose max-w-none">
-          {post.content ? post.content.split('\n').map((paragraph, index) => (
-            <p key={index} className="text-gray-700 leading-relaxed">
-              {paragraph || ' '}
-            </p>
-          )) : (
-            <p className="text-gray-400">暂无内容</p>
-          )}
-        </article>
+        <article
+          className="prose max-w-none text-gray-700"
+          dangerouslySetInnerHTML={{ __html: post.content || '<p class="text-gray-400">暂无内容</p>' }}
+        />
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">

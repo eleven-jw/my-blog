@@ -93,30 +93,44 @@ type PostDetailData = {
 }
 
 export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams
+  const scope = searchParams.get('scope')
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) {
+
+  let role: Role | null = null
+
+  if (session?.user?.id) {
+    role = await getCurrentUserRole(session.user.id)
+    if (!role) {
+      return NextResponse.json(
+        { code: 403, message: 'Account not found' },
+        { status: 403 }
+      )
+    }
+  } else if (scope === 'public') {
+    role = 'USER'
+  } else {
     return NextResponse.json(
       { code: 401, message: 'Please login' },
       { status: 401 }
     )
   }
 
-  const role = await getCurrentUserRole(session.user.id)
-  if (!role) {
-    return NextResponse.json(
-      { code: 403, message: 'Account not found' },
-      { status: 403 }
-    )
-  }
-
-  const searchParams = new URL(request.url).searchParams
   const postId = searchParams.get('id')
 
   if (postId) {
+    if (!session?.user?.id || !role) {
+      return NextResponse.json(
+        { code: 401, message: 'Please login' },
+        { status: 401 }
+      )
+    }
     return getArticleDetail(postId, session.user.id, role)
   }
 
-  return getArticleList(request, session.user.id, role)
+  const resolvedRole: Role = role ?? 'USER'
+
+  return getArticleList(request, session?.user?.id ?? '', resolvedRole)
 }
 
 export async function POST(request: Request) {
@@ -131,10 +145,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const title = typeof body?.title === 'string' ? body.title.trim() : ''
-    const content = typeof body?.content === 'string' ? body.content.trim() : ''
+    const content = typeof body?.content === 'string' ? body.content : ''
     const status = normalizeStatus(body?.status)
 
-    if (!title || !content) {
+    const plainText = content.replace(/<[^>]*>/g, '').trim()
+
+    if (!title || !plainText) {
       return NextResponse.json(
         { code: 422, message: 'Title and content are required' },
         { status: 422 }
@@ -245,7 +261,15 @@ export async function PUT(request: Request) {
     }
 
     if (typeof body?.content === 'string') {
-      data.content = body.content
+      const htmlContent = body.content
+      const plainText = htmlContent.replace(/<[^>]*>/g, '').trim()
+      if (!plainText) {
+        return NextResponse.json(
+          { code: 422, message: '正文不能为空' },
+          { status: 422 }
+        )
+      }
+      data.content = htmlContent
     }
 
     if (body?.status !== undefined) {
