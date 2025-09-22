@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata = { title: "Register" };
 
-export default function RegisterPage({ searchParams }: { searchParams?: Record<string, string> }) {
+export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
       <div className="w-full max-w-md">

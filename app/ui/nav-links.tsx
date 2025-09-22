@@ -3,18 +3,25 @@ import {
   UserGroupIcon,
   HomeIcon,
   DocumentDuplicateIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import clsx from 'clsx';
 
 const links = [
+  {
+    name: 'Explore',
+    href: '/explore',
+    icon: GlobeAltIcon,
+  },
   { name: 'Home', href: '/', icon: HomeIcon },
   {
     name: 'Posts',
     href: '/posts',
     icon: DocumentDuplicateIcon,
   },
+  
   {
     name: 'Profile',
     href: '/profile',

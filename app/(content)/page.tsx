@@ -3,7 +3,7 @@ import Bio from "@/app/ui/home/bio"
 import OverView from "@/app/ui/home/overview"
 import RecentPosts from "@/app/ui/home/rencent-posts"
 import { Suspense, useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import type { DataTableColumnDef } from "@/app/ui/common/data-table";
 import router from "next/router";
 import { useEffect } from "react";
 import { UserInfo } from "@/types/use";
@@ -28,7 +28,16 @@ type Article = {
   saves: number;
 };
 
-const columns: ColumnDef<Article>[] = [
+type PostsListApiItem = {
+  id: string;
+  title: string;
+  likes?: number;
+  views?: number;
+  commentsCount?: number;
+  saves?: number;
+};
+
+const columns: DataTableColumnDef<Article, unknown>[] = [
   { accessorKey: "title", header: "Title" },
   { accessorKey: "impressions", header: "Impressions" },
   { accessorKey: "reads", header: "Reads" },
@@ -73,7 +82,6 @@ export default function Home() {
         const userData = await userRes.json();
         const stateData = await statsRes.json();
         const postsData = await postsRes.json();
-        console.log('postsData', postsData);
         if (userData.code !== 200) throw new Error(userData.message);
         if (stateData.code !== 200) throw new Error(stateData.message);
         if (postsData.code !== 200) throw new Error(postsData.message);
@@ -83,9 +91,19 @@ export default function Home() {
           name: '',
           ...userData.data
         });
-        console.log('states:', Array.isArray(stateData.data) ? stateData.data : []);
         setStates(Array.isArray(stateData.data) ? stateData.data : []);
-        // setPosts(postsData.data)
+        const postsList = Array.isArray(postsData.data?.list)
+          ? postsData.data.list.map((post: PostsListApiItem) => ({
+              id: post.id,
+              title: post.title,
+              impressions: post.views ?? 0,
+              reads: post.views ?? 0,
+              comments: post.commentsCount ?? 0,
+              likes: post.likes ?? 0,
+              saves: post.saves ?? 0,
+            }))
+          : [];
+        setPosts(postsList);
       } catch (err) {
         console.error('数据加载失败:', err);
       } finally {

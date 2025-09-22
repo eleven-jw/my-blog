@@ -23,6 +23,13 @@ export async function GET() {
       },
     });
 
+    if (!user) {
+      return NextResponse.json(
+        { code: 404, message: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const yesterday = getYesterdayDate();
     const yesterdayStat = await prisma.userFollowerDaily.findUnique({
       where: { userId: session.user.id, date: yesterday },
@@ -57,7 +64,8 @@ export async function GET() {
         }
     ]
     });
-  } catch (err) {
+  } catch (error) {
+    console.error('fetch states failed', error)
     return NextResponse.json(
       { code: 500, message: 'Server error' },
       { status: 500 }

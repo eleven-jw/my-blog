@@ -6,6 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import type { Role } from "@prisma/client"
 
 export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET!,
@@ -67,16 +68,7 @@ export const authOptions = {
             },
           });
 
-          // 将刷新令牌嵌入 JWT
-          const accessToken = jwt.sign(
-            {
-              sub: user.id,
-              exp: Math.floor(Date.now() / 1000) + 3600, // expired time 1 h
-              remember: credentials?.remember,
-              refreshToken: refreshToken, 
-            },
-            process.env.ACCESS_TOKEN_SECRET!,
-          );
+          // 可以根据需要在此处生成访问令牌并下发给客户端
         }
 
         return {
@@ -161,7 +153,7 @@ export const authOptions = {
           token.expiresIn = '1h';
 
           // 2.6 generate refreshToken
-          const newRefreshToken = process.env. REFRESH_TOKEN_SECRET;
+          const newRefreshToken = process.env.REFRESH_TOKEN_SECRET;
           const newRefreshExpiresAt = new Date(
             Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
           );
@@ -184,7 +176,7 @@ export const authOptions = {
 
       return token;
     },
-    async signOut({ token, session, req, res }) {
+    async signOut({ session, res }) {
         if (session?.user?.id) {
             // 清除 HttpOnly Cookie（关键！）
             res.clearCookie('next-auth.session-token', {
@@ -216,7 +208,7 @@ export async function getUser() {
     where: { id: session.user.id },
   });
 }
-export function requireRole(user: any, role: "ADMIN" | "AUTHOR" | "USER") {
+export function requireRole(user: { role: Role } | null | undefined, role: Role) {
   if (!user || user.role !== role) {
     throw new Error("没有权限访问");
   }

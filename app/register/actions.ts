@@ -17,13 +17,18 @@ const RegisterSchema = z
   });
 
 export async function registerAction(formData: FormData) {
-  const data = Object.fromEntries(formData) as Record<string, any>;
+  const rawInput = {
+    email: (formData.get('email') ?? '').toString(),
+    password: (formData.get('password') ?? '').toString(),
+    confirm: (formData.get('confirm') ?? '').toString(),
+  };
 
-  const parsed = RegisterSchema.safeParse(data);
+  const parsed = RegisterSchema.safeParse(rawInput);
   if (!parsed.success) {
     const firstError = parsed.error.errors[0]?.message ?? "wrong params";
     // redirect to page register with errorinfo
     redirect(`/register?error=${encodeURIComponent(String(firstError))}`);
+    return;
   }
 
   const { email, password } = parsed.data;
@@ -32,6 +37,7 @@ export async function registerAction(formData: FormData) {
   const exist = await prisma.user.findUnique({ where: { email } });
   if (exist) {
     redirect(`/register?error=${encodeURIComponent("this email is already exist")}`);
+    return;
   }
 
   // hash password

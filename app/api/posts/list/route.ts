@@ -1,250 +1,438 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
 import { authOptions } from "@/lib/auth"
-import { prisma } from '@/lib/prisma';
-import type { Post, Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma'
+import type { Prisma, Role } from '@prisma/client'
 
-type ArticleListResponse = {
-  code: number;
-  message: string;
-  data: {
-    list: Post[]; // 文章列表
-    page: number; // 当前页
-    size: number; // 每页条数
-    total: number; // 总条数
-  };
-};
+const allowedStatuses = new Set(['draft', 'published', 'scheduled'])
 
-type ArticleDetailResponse = {
-  code: number;
-  message: string;
-  data: Post | null;
-};
+const postListSelect = {
+  id: true,
+  title: true,
+  status: true,
+  likes: true,
+  views: true,
+  createdAt: true,
+  updatedAt: true,
+  author: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  _count: {
+    select: {
+      comments: true,
+    },
+  },
+} satisfies Prisma.PostSelect
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id?: string } }
-) {
-  const session = await getServerSession(authOptions);
+const postDetailSelect = {
+  id: true,
+  title: true,
+  content: true,
+  status: true,
+  likes: true,
+  views: true,
+  tags: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  createdAt: true,
+  updatedAt: true,
+  authorId: true,
+  author: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  _count: {
+    select: {
+      comments: true,
+    },
+  },
+} satisfies Prisma.PostSelect
+
+type PostListQueryResult = Prisma.PostGetPayload<{ select: typeof postListSelect }>
+
+type PostDetailQueryResult = Prisma.PostGetPayload<{ select: typeof postDetailSelect }>
+
+type PostListItem = {
+  id: string
+  title: string
+  status: string
+  likes: number
+  views: number
+  createdAt: string
+  updatedAt: string
+  author: {
+    id: string
+    name: string | null
+  }
+  commentsCount: number
+}
+
+type PostDetailData = {
+  id: string
+  title: string
+  content: string
+  status: string
+  likes: number
+  views: number
+  tags: Array<{ id: string; name: string }>
+  createdAt: string
+  updatedAt: string
+  author: {
+    id: string
+    name: string | null
+  }
+  commentsCount: number
+}
+
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json(
       { code: 401, message: 'Please login' },
       { status: 401 }
-    );
+    )
   }
-  if (params?.id) {
-    return getArticleDetail(params.id, session.user.id);
-  } else {
-    return getArticleList(request, session.user.id);
+
+  const role = await getCurrentUserRole(session.user.id)
+  if (!role) {
+    return NextResponse.json(
+      { code: 403, message: 'Account not found' },
+      { status: 403 }
+    )
+  }
+
+  const searchParams = new URL(request.url).searchParams
+  const postId = searchParams.get('id')
+
+  if (postId) {
+    return getArticleDetail(postId, session.user.id, role)
+  }
+
+  return getArticleList(request, session.user.id, role)
+}
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { code: 401, message: 'Please login' },
+      { status: 401 }
+    )
+  }
+
+  try {
+    const body = await request.json()
+    const title = typeof body?.title === 'string' ? body.title.trim() : ''
+    const content = typeof body?.content === 'string' ? body.content.trim() : ''
+    const status = normalizeStatus(body?.status)
+
+    if (!title || !content) {
+      return NextResponse.json(
+        { code: 422, message: 'Title and content are required' },
+        { status: 422 }
+      )
+    }
+
+    const slug = await generateUniqueSlug(title)
+
+    const created = await prisma.$transaction(async (tx) => {
+      const post = await tx.post.create({
+        data: {
+          title,
+          content,
+          status,
+          slug,
+          authorId: session.user.id,
+        },
+        select: postDetailSelect,
+      })
+
+      const totalPosts = await tx.post.count({
+        where: { authorId: session.user.id },
+      })
+
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: {
+          postCount: totalPosts,
+        },
+      })
+
+      return post
+    })
+
+    return NextResponse.json({
+      code: 200,
+      message: 'success',
+      data: toPostDetail(created),
+    })
+  } catch (error) {
+    console.error('create post failed', error)
+    return NextResponse.json(
+      { code: 500, message: 'Server error' },
+      { status: 500 }
+    )
   }
 }
 
-// export async function GET(
-//   request: Request,
-//   { params }: { params: { id?: string } }
-// ) {
-//   // console.log('request', request);
-//   console.log('params', params);
-//   // const session = await getServerSession(authOptions);
-//   // if (!session?.user?.id) {
-//   //   return NextResponse.json(
-//   //     { code: 401, message: 'please login' },
-//   //     { status: 401 }
-//   //   );
-//   // }
+export async function PUT(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { code: 401, message: 'Please login' },
+      { status: 401 }
+    )
+  }
 
-//   if (params.id) {
-//     return NextResponse.json({
-//       code: 200,
-//       message: 'success',
-//       data: {
-//         list:[{
-//           id: "1",
-//           title: "github上react开箱即用的模板 (仅供自己...",
-//           impressions: 1315,
-//           reads: 1028,
-//           comments: 0,
-//           likes: 8,
-//           saves: 14,
-//         },
-//         {
-//           id: "2",
-//           title: "npm fund 命令的作用",
-//           impressions: 2540,
-//           reads: 912,
-//           comments: 0,
-//           likes: 4,
-//           saves: 1,
-//         }
-//       ]
-//     }
-//     });
-//   }
-// }
+  const role = await getCurrentUserRole(session.user.id)
+  if (!role) {
+    return NextResponse.json(
+      { code: 403, message: 'Account not found' },
+      { status: 403 }
+    )
+  }
 
-// export async function PUT(
-//   request: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   const session = await getServerSession(authOptions);
-//   if (!session?.user?.id) {
-//     return NextResponse.json(
-//       { code: 401, message: 'Please login' },
-//       { status: 401 }
-//     );
-//   }
+  try {
+    const body = await request.json()
+    const postId = typeof body?.id === 'string' ? body.id : ''
 
-//   try {
-//     const articleId = params.id;
-//     const updatedData = await request.json(); // 解析请求体（文章更新数据）
+    if (!postId) {
+      return NextResponse.json(
+        { code: 422, message: 'Missing post id' },
+        { status: 422 }
+      )
+    }
 
-//     // 校验用户是否为文章作者（假设文章有 authorId 字段）
-//     const article = await prisma.post.findUnique({
-//       where: { id: articleId },
-//     });
-//     if (!article) {
-//       return NextResponse.json(
-//         { code: 404, message: '文章不存在' },
-//         { status: 404 }
-//       );
-//     }
-//     if (article.authorId !== session.user.id) {
-//       return NextResponse.json(
-//         { code: 403, message: '无权限编辑此文章' },
-//         { status: 403 }
-//       );
-//     }
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: {
+        id: true,
+        authorId: true,
+        title: true,
+      },
+    })
 
-//     // 执行更新（使用 Prisma 的 update 方法）
-//     const updatedArticle = await prisma.post.update({
-//       where: { id: articleId },
-//       data: updatedData,
-//     });
+    if (!post) {
+      return NextResponse.json(
+        { code: 404, message: 'Post not found' },
+        { status: 404 }
+      )
+    }
 
-//     return NextResponse.json({
-//       code: 200,
-//       message: '文章更新成功',
-//       data: updatedArticle,
-//     });
-//   } catch (err) {
-//     return NextResponse.json(
-//       { code: 500, message: 'Server error' },
-//       { status: 500 }
-//     );
-//   }
-// }
+    if (role !== 'ADMIN' && post.authorId !== session.user.id) {
+      return NextResponse.json(
+        { code: 403, message: 'No permission to update this post' },
+        { status: 403 }
+      )
+    }
 
-// export async function DELETE(
-//   request: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   const session = await getServerSession(authOptions);
-//   if (!session?.user?.id) {
-//     return NextResponse.json(
-//       { code: 401, message: 'Please login' },
-//       { status: 401 }
-//     );
-//   }
+    const data: Prisma.PostUpdateInput = {}
 
-//   try {
-//     const articleId = params.id;
+    if (typeof body?.title === 'string' && body.title.trim()) {
+      const nextTitle = body.title.trim()
+      data.title = nextTitle
+      if (nextTitle !== post.title) {
+        data.slug = await generateUniqueSlug(nextTitle, postId)
+      }
+    }
 
-//     // 校验文章是否存在且用户有权限
-//     const article = await prisma.post.findUnique({
-//       where: { id: articleId },
-//     });
-//     if (!article) {
-//       return NextResponse.json(
-//         { code: 404, message: '文章不存在' },
-//         { status: 404 }
-//       );
-//     }
-//     if (article.authorId !== session.user.id) {
-//       return NextResponse.json(
-//         { code: 403, message: '无权限删除此文章' },
-//         { status: 403 }
-//       );
-//     }
+    if (typeof body?.content === 'string') {
+      data.content = body.content
+    }
 
-//     // 逻辑删除（标记 isDeleted 为 true）
-//     await prisma.post.update({
-//       where: { id: articleId },
-//       data: { isDeleted: true },
-//     });
+    if (body?.status !== undefined) {
+      data.status = normalizeStatus(body.status)
+    }
 
-//     return NextResponse.json({
-//       code: 200,
-//       message: '文章删除成功',
-//     });
-//   } catch (err) {
-//     return NextResponse.json(
-//       { code: 500, message: 'Server error' },
-//       { status: 500 }
-//     );
-//   }
-// }
+    if (!Object.keys(data).length) {
+      return NextResponse.json(
+        { code: 422, message: 'No updatable fields supplied' },
+        { status: 422 }
+      )
+    }
+
+    const updated = await prisma.post.update({
+      where: { id: postId },
+      data,
+      select: postDetailSelect,
+    })
+
+    return NextResponse.json({
+      code: 200,
+      message: 'success',
+      data: toPostDetail(updated),
+    })
+  } catch (error) {
+    console.error('update post failed', error)
+    return NextResponse.json(
+      { code: 500, message: 'Server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { code: 401, message: 'Please login' },
+      { status: 401 }
+    )
+  }
+
+  const role = await getCurrentUserRole(session.user.id)
+  if (!role) {
+    return NextResponse.json(
+      { code: 403, message: 'Account not found' },
+      { status: 403 }
+    )
+  }
+
+  try {
+    const body = await request.json()
+    const postId = body?.id as string | undefined
+
+    if (!postId) {
+      return NextResponse.json(
+        { code: 422, message: 'Missing post id' },
+        { status: 422 }
+      )
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { id: true, authorId: true },
+    })
+
+    if (!post) {
+      return NextResponse.json(
+        { code: 404, message: 'Post not found' },
+        { status: 404 }
+      )
+    }
+
+    if (role !== 'ADMIN' && post.authorId !== session.user.id) {
+      return NextResponse.json(
+        { code: 403, message: 'No permission to delete this post' },
+        { status: 403 }
+      )
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.post.delete({ where: { id: postId } })
+
+      const totalPosts = await tx.post.count({
+        where: { authorId: post.authorId },
+      })
+
+      await tx.user.update({
+        where: { id: post.authorId },
+        data: {
+          postCount: totalPosts,
+        },
+      })
+    })
+
+    return NextResponse.json({ code: 200, message: 'success' })
+  } catch (error) {
+    console.error('delete post failed', error)
+    return NextResponse.json(
+      { code: 500, message: 'Server error' },
+      { status: 500 }
+    )
+  }
+}
 
 async function getArticleList(
   request: Request,
-  userId: string
+  userId: string,
+  role: Role
 ) {
   try {
-    const searchParams = new URL(request.url).searchParams;
-    const pageParam = parseInt(searchParams.get('page') || '1', 10);
-    const sizeParam = parseInt(searchParams.get('size') || '10', 10);
-    const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
-    const size = Number.isNaN(sizeParam) || sizeParam < 1 ? 10 : sizeParam;
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrderParam = searchParams.get('sortOrder');
-    const sortOrder = sortOrderParam === 'asc' ? 'asc' : 'desc';
-    const title = searchParams.get('title');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const startBoundary = startDate ? new Date(startDate) : undefined;
-    const endBoundary = endDate ? new Date(endDate) : undefined;
+    const searchParams = new URL(request.url).searchParams
+    const pageParam = parseInt(searchParams.get('page') || '1', 10)
+    const sizeParam = parseInt(searchParams.get('size') || '10', 10)
+    const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam
+    const size = Number.isNaN(sizeParam) || sizeParam < 1 ? 10 : sizeParam
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrderParam = searchParams.get('sortOrder')
+    const sortOrder = sortOrderParam === 'asc' ? 'asc' : 'desc'
+    const title = searchParams.get('title')?.trim()
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
+    const authorIdParam = searchParams.get('authorId')
+    const scope = searchParams.get('scope')
+    const statusFilter = searchParams.get('status')
 
-    const where: Prisma.PostWhereInput = {
-      authorId: userId,
-    };
+    const startBoundary = startDate ? new Date(startDate) : undefined
+    const endBoundary = endDate ? new Date(endDate) : undefined
+
+    const where: Prisma.PostWhereInput = {}
+
+    const isPublicScope = scope === 'public'
+
+    if (isPublicScope) {
+      where.status = 'published'
+      if (authorIdParam && authorIdParam !== 'all') {
+        where.authorId = authorIdParam
+      }
+    } else {
+      if (authorIdParam && authorIdParam !== 'all') {
+        if (role !== 'ADMIN' && authorIdParam !== userId) {
+          return NextResponse.json(
+            { code: 403, message: 'No permission to view this author posts' },
+            { status: 403 }
+          )
+        }
+        where.authorId = authorIdParam
+      } else if (role !== 'ADMIN') {
+        where.authorId = userId
+      }
+
+      if (statusFilter) {
+        where.status = statusFilter
+      }
+    }
 
     if (title) {
-      where.title = { contains: title, mode: 'insensitive' };
+      where.title = { contains: title, mode: 'insensitive' }
     }
 
     if (startBoundary && !Number.isNaN(startBoundary.getTime())) {
-      where.createdAt = { gte: startBoundary };
+      where.createdAt = { gte: startBoundary }
     }
+
     if (endBoundary && !Number.isNaN(endBoundary.getTime())) {
       where.createdAt = where.createdAt
         ? { ...where.createdAt, lte: endBoundary }
-        : { lte: endBoundary };
+        : { lte: endBoundary }
     }
 
     const orderBy: Prisma.PostOrderByWithRelationInput =
       sortBy === 'title'
         ? { title: sortOrder }
-        : { createdAt: sortOrder };
+        : { createdAt: sortOrder }
 
-    const [list, total] = await Promise.all([
+    const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where,
         orderBy,
         skip: (page - 1) * size,
         take: size,
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          likes: true,
-          views: true,
-          comments: true,
-          tags: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: postListSelect,
       }),
       prisma.post.count({ where }),
-    ]);
+    ])
+
+    const list: PostListItem[] = posts.map(toPostListItem)
 
     return NextResponse.json({
       code: 200,
@@ -255,51 +443,136 @@ async function getArticleList(
         size,
         total,
       },
-    });
-  } catch (err) {
+    })
+  } catch (error) {
+    console.error('fetch posts failed', error)
     return NextResponse.json(
       { code: 500, message: 'Server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
 async function getArticleDetail(
-  articleId: string,
-  userId: string
-): Promise<ArticleDetailResponse> {
+  postId: string,
+  userId: string,
+  role: Role
+) {
   try {
-    const article = await prisma.post.findUnique({
-      where: { id: articleId, authorId: userId }, // 仅查询当前用户文章
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        likes: true,
-        views: true,
-        comments: true,
-        tags: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: postDetailSelect,
+    })
 
-    if (!article) {
+    if (!post) {
       return NextResponse.json(
-        { code: 404, message: 'article not exit' },
+        { code: 404, message: 'Post not found' },
         { status: 404 }
-      );
+      )
+    }
+
+    if (role !== 'ADMIN' && post.authorId !== userId) {
+      return NextResponse.json(
+        { code: 403, message: 'No permission to view this post' },
+        { status: 403 }
+      )
     }
 
     return NextResponse.json({
       code: 200,
       message: 'success',
-      data: article,
-    });
-  } catch (err) {
+      data: toPostDetail(post),
+    })
+  } catch (error) {
+    console.error('fetch post detail failed', error)
     return NextResponse.json(
-      { code: 500, message: 'server error' },
+      { code: 500, message: 'Server error' },
       { status: 500 }
-    );
+    )
+  }
+}
+
+async function getCurrentUserRole(userId: string): Promise<Role | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+
+  return user?.role ?? null
+}
+
+function toPostListItem(post: PostListQueryResult): PostListItem {
+  return {
+    id: post.id,
+    title: post.title,
+    status: post.status ?? 'draft',
+    likes: post.likes ?? 0,
+    views: post.views ?? 0,
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+    author: {
+      id: post.author.id,
+      name: post.author.name,
+    },
+    commentsCount: post._count.comments,
+  }
+}
+
+function toPostDetail(post: PostDetailQueryResult): PostDetailData {
+  return {
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    status: post.status ?? 'draft',
+    likes: post.likes ?? 0,
+    views: post.views ?? 0,
+    tags: post.tags ?? [],
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+    author: {
+      id: post.author.id,
+      name: post.author.name,
+    },
+    commentsCount: post._count.comments,
+  }
+}
+
+function normalizeStatus(status: unknown): string {
+  if (typeof status !== 'string') {
+    return 'draft'
+  }
+
+  const normalized = status.toLowerCase()
+  return allowedStatuses.has(normalized) ? normalized : 'draft'
+}
+
+function createSlugFragment(title: string): string {
+  const fragment = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+
+  return fragment.slice(0, 48)
+}
+
+async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
+  const base = createSlugFragment(title) || `post-${Date.now()}`
+  let attempt = base
+  let counter = 1
+
+  while (true) {
+    const existing = await prisma.post.findFirst({
+      where: excludeId
+        ? { slug: attempt, NOT: { id: excludeId } }
+        : { slug: attempt },
+      select: { id: true },
+    })
+
+    if (!existing) {
+      return attempt
+    }
+
+    attempt = `${base}-${counter}`
+    counter += 1
   }
 }

@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setError('');
+        setError(null);
         setLoading(true);
 
         const data = new FormData(e.currentTarget);
@@ -142,7 +142,9 @@ export default function LoginPage() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-2">
-                  <Button type="submit" className="w-full">Sign in</Button>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'Signing in...' : 'Sign in'}
+                  </Button>
 
                   <div className="flex items-center gap-2">
                     <Separator className="flex-1" />
@@ -151,14 +153,26 @@ export default function LoginPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mt-2">
-                    <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => handleSocialSignIn("google")}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex items-center justify-center gap-2"
+                      onClick={() => handleSocialSignIn("google")}
+                      disabled={loading}
+                    >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M22 12a10 10 0 1 0-20 0 10 10 0 0 0 20 0z" />
                       </svg>
                       Google
                     </Button>
 
-                    <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => handleSocialSignIn("github")}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex items-center justify-center gap-2"
+                      onClick={() => handleSocialSignIn("github")}
+                      disabled={loading}
+                    >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10" />
                       </svg>
