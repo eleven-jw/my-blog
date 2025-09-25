@@ -9,6 +9,7 @@ export interface UserInfo {
   starsCount?: number
   totalViews?: number
   createdAt?: string | Date
+  interests?: string[]
 }
 
 export interface BioProps {

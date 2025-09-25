@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  console.log('session', session);
+  console.log('users session', session);
   if (!session?.user?.id) {
     return NextResponse.json(
       { code: 401, message: 'Please login' },
@@ -20,11 +20,12 @@ export async function GET() {
         select: {
           id: true,
           name: true,
-          image: true,
-          fansCount: true,
-          postCount: true,
-        },
-      }),
+        image: true,
+        fansCount: true,
+        postCount: true,
+        interests: true,
+      },
+    }),
       prisma.post.count({
         where: { authorId: session.user.id },
       }),
