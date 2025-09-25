@@ -43,7 +43,7 @@ export default function Search({
   )
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg">
       <div className="grid gap-4 md:grid-cols-4">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-700">标题</label>

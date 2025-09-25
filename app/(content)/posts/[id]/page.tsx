@@ -1,6 +1,5 @@
 import { getServerSession } from 'next-auth'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
@@ -82,55 +81,41 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
   const isFromExplore = searchParams?.from === 'explore'
   const parentHref = isFromExplore ? '/explore' : '/posts'
   const parentLabel = isFromExplore ? '文章广场' : '文章管理'
-  const backHref = parentHref
+  const breadcrumbItems = [
+    { label: '首页', href: '/' },
+    { label: parentLabel, href: parentHref },
+    { label: post.title },
+  ]
 
   return (
-    <div className="space-y-6">
-      <PostBreadcrumb
-        segmentOverrides={{
-          posts: { label: parentLabel, href: parentHref },
-          [post.id]: null,
-        }}
-        appendItems={[{ label: post.title }]}
-      />
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          href={backHref}
-          className="inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100"
-        >
-          ← 返回
-        </Link>
+    <div className="space-y-4">
+      <PostBreadcrumb items={breadcrumbItems} />
+      <div className="space-y-3">
         <h1 className="text-3xl font-semibold text-gray-900">{post.title}</h1>
+        <div className="space-y-2 rounded-md bg-gray-50 p-4 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>作者：{post.author?.name ?? '未知作者'}</span>
+            <span>状态：{post.status}</span>
+            <span>创建于：{formatDate(post.createdAt)}</span>
+            <span>更新于：{formatDate(post.updatedAt)}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+            <span>浏览：{post.views ?? 0}</span>
+            <span>点赞：{post.likes ?? 0}</span>
+            <span>评论：{post.commentsCount ?? 0}</span>
+            <span>
+              标签：
+              {post.tags.length ? post.tags.map((tag) => tag.name).join('、') : '暂无标签'}
+            </span>
+          </div>
+        </div>
       </div>
-      <p className="text-sm text-gray-500">
-        状态：{post.status} · 作者：{post.author?.name ?? '未知作者'} · 创建于 {formatDate(post.createdAt)} · 更新于 {formatDate(post.updatedAt)}
-      </p>
 
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <article
           className="prose max-w-none text-gray-700"
           dangerouslySetInnerHTML={{ __html: post.content || '<p class="text-gray-400">暂无内容</p>' }}
         />
-      </div>
-
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <h2 className="text-base font-medium text-gray-900">统计</h2>
-        <dl className="mt-4 grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
-          <div className="rounded-md border border-gray-100 bg-gray-50 p-3">
-            <dt className="text-gray-500">浏览</dt>
-            <dd className="mt-1 text-xl font-semibold text-gray-900">{post.views ?? 0}</dd>
-          </div>
-          <div className="rounded-md border border-gray-100 bg-gray-50 p-3">
-            <dt className="text-gray-500">点赞</dt>
-            <dd className="mt-1 text-xl font-semibold text-gray-900">{post.likes ?? 0}</dd>
-          </div>
-          <div className="rounded-md border border-gray-100 bg-gray-50 p-3">
-            <dt className="text-gray-500">标签</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {post.tags.length ? post.tags.map((tag) => tag.name).join('、') : '暂无标签'}
-            </dd>
-          </div>
-        </dl>
       </div>
     </div>
   )
