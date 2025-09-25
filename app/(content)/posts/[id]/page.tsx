@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { notFound, redirect } from 'next/navigation'
 import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
+import sanitizeHtml from 'sanitize-html'
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 
@@ -63,6 +64,11 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
           name: true,
         },
       },
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
     },
   })
 
@@ -102,7 +108,7 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
             <span>浏览：{post.views ?? 0}</span>
             <span>点赞：{post.likes ?? 0}</span>
-            <span>评论：{post.commentsCount ?? 0}</span>
+            <span>评论：{post._count?.comments ?? 0}</span>
             <span>
               标签：
               {post.tags.length ? post.tags.map((tag) => tag.name).join('、') : '暂无标签'}
@@ -114,9 +120,57 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <article
           className="prose max-w-none text-gray-700"
-          dangerouslySetInnerHTML={{ __html: post.content || '<p class="text-gray-400">暂无内容</p>' }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeForRender(post.content || '<p class="text-gray-400">暂无内容</p>'),
+          }}
         />
       </div>
     </div>
   )
+}
+
+function sanitizeForRender(html: string) {
+  return sanitizeHtml(html, {
+    allowedTags: [
+      'p',
+      'span',
+      'strong',
+      'em',
+      'u',
+      's',
+      'code',
+      'pre',
+      'blockquote',
+      'ul',
+      'ol',
+      'li',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'br',
+      'hr',
+      'a',
+      'img',
+    ],
+    allowedAttributes: {
+      span: ['style'],
+      code: ['class'],
+      pre: ['class'],
+      a: ['href', 'title', 'rel', 'target'],
+      img: ['src', 'alt', 'title', 'width', 'height', 'style'],
+    },
+    allowedStyles: {
+      span: {
+        color: [/^#[0-9a-f]{3,6}$/i, /^rgb\((\s*\d+\s*,){2}\s*\d+\s*\)$/i],
+      },
+      img: {
+        width: [/^\d+(px|%)$/],
+        height: [/^\d+(px|%)$/],
+        display: [/^block$/, /^inline-block$/, /^inline$/],
+      },
+    },
+  })
 }

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import type { Prisma, Role } from '@prisma/client'
+import sanitizeHtml from 'sanitize-html'
 
 const allowedStatuses = new Set(['draft', 'published', 'scheduled'])
 
@@ -159,11 +160,13 @@ export async function POST(request: Request) {
 
     const slug = await generateUniqueSlug(title)
 
+    const sanitizedContent = sanitizeContent(content)
+
     const created = await prisma.$transaction(async (tx) => {
       const post = await tx.post.create({
         data: {
           title,
-          content,
+          content: sanitizedContent,
           status,
           slug,
           authorId: session.user.id,
@@ -269,7 +272,7 @@ export async function PUT(request: Request) {
           { status: 422 }
         )
       }
-      data.content = htmlContent
+      data.content = sanitizeContent(htmlContent)
     }
 
     if (body?.status !== undefined) {
@@ -599,4 +602,54 @@ async function generateUniqueSlug(title: string, excludeId?: string): Promise<st
     attempt = `${base}-${counter}`
     counter += 1
   }
+}
+
+function sanitizeContent(content: string) {
+  return sanitizeHtml(content, {
+    allowedTags: [
+      'p',
+      'span',
+      'strong',
+      'em',
+      'u',
+      's',
+      'code',
+      'pre',
+      'blockquote',
+      'ul',
+      'ol',
+      'li',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'br',
+      'hr',
+      'a',
+      'img',
+    ],
+    allowedAttributes: {
+      span: ['style'],
+      code: ['class'],
+      pre: ['class'],
+      a: ['href', 'title', 'rel', 'target'],
+      img: ['src', 'alt', 'title', 'width', 'height', 'style'],
+    },
+    allowedStyles: {
+      span: {
+        color: [/^#[0-9a-f]{3,6}$/i, /^rgb\((\s*\d+\s*,){2}\s*\d+\s*\)$/i],
+      },
+      img: {
+        width: [/^\d+(px|%)$/],
+        height: [/^\d+(px|%)$/],
+        display: [/^block$/, /^inline-block$/, /^inline$/],
+      },
+    },
+    nonTextTags: ['style', 'script', 'textarea', 'option'],
+    parser: {
+      lowerCaseTags: true,
+    },
+  })
 }
