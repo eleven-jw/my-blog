@@ -22,6 +22,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
     },
+    immediatelyRender: false,
   })
 
   useEffect(() => {

@@ -26,14 +26,12 @@ const DEFAULT_SEGMENT_MAP: Record<string, BreadcrumbItemData> = {
 type PostBreadcrumbProps = {
   items?: BreadcrumbItemData[]
   appendItems?: BreadcrumbItemData[]
-  segmentOverrides?: Record<string, BreadcrumbItemData | null>
   className?: string
 }
 
 export default function PostBreadcrumb({
   items,
   appendItems,
-  segmentOverrides,
   className,
 }: PostBreadcrumbProps) {
   const pathname = usePathname()
@@ -45,18 +43,11 @@ export default function PostBreadcrumb({
 
     const segments = pathname.split('/').filter(Boolean)
     const result: BreadcrumbItemData[] = [{ label: '首页', href: '/' }]
-    const overrides = segmentOverrides ?? {}
     let currentPath = ''
 
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`
-      const override = overrides.hasOwnProperty(segment) ? overrides[segment] : undefined
-
-      if (override === null) {
-        return
-      }
-
-      let config = override || DEFAULT_SEGMENT_MAP[segment]
+      let config = DEFAULT_SEGMENT_MAP[segment]
       const isLastSegment = index === segments.length - 1
       const hasAppend = !!appendItems?.length
 
@@ -82,7 +73,7 @@ export default function PostBreadcrumb({
     }
 
     return result
-  }, [appendItems, items, pathname, segmentOverrides])
+  }, [appendItems, items, pathname])
 
   return (
     <Breadcrumb className={className}>
