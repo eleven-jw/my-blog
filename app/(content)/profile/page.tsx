@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import ProfileView from "@/app/ui/profile/ProfileView"
+import { getInterestTags } from "@/app/lib/interests"
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
@@ -10,7 +11,7 @@ export default async function ProfilePage() {
     redirect('/login?callbackUrl=/profile')
   }
 
-  const [user, postCount] = await Promise.all([
+  const [user, postCount, availableInterests] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -29,6 +30,7 @@ export default async function ProfilePage() {
       },
     }),
     prisma.post.count({ where: { authorId: session.user.id } }),
+    getInterestTags(),
   ])
 
   if (!user) {
@@ -44,5 +46,5 @@ export default async function ProfilePage() {
 
   const profile = { ...user, postCount }
 
-  return <ProfileView profile={profile} />
+  return <ProfileView profile={profile} availableInterests={availableInterests} />
 }

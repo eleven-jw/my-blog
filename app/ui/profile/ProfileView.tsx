@@ -19,9 +19,10 @@ export type ProfileViewProps = {
     role?: string | null
     interests?: string[]
   }
+  availableInterests: string[]
 }
 
-export default function ProfileView({ profile }: ProfileViewProps) {
+export default function ProfileView({ profile, availableInterests }: ProfileViewProps) {
   const router = useRouter()
   const [isDialogOpen, setDialogOpen] = useState(false)
   const [name, setName] = useState(profile.name ?? '')
@@ -249,7 +250,7 @@ export default function ProfileView({ profile }: ProfileViewProps) {
                 </div>
                 <div className="flex-1 space-y-2 text-sm text-gray-500">
                   <p className="font-medium text-gray-900">click the image</p>
-                  <p>only support PNG / JPG / WEBP,no more than 2MB。</p>
+                   <p>only support PNG / JPG / WEBP,no more than 2MB。</p>
                 </div>
               </div>
               <input
@@ -291,7 +292,7 @@ export default function ProfileView({ profile }: ProfileViewProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Intertests</label>
                 <div className="flex flex-wrap gap-2">
-                  {AVAILABLE_INTERESTS.map((tag) => {
+                  {availableInterests.map((tag) => {
                     const active = selectedInterests.includes(tag)
                     return (
                       <button
@@ -320,10 +321,10 @@ export default function ProfileView({ profile }: ProfileViewProps) {
 
               <div className="flex items-center justify-end gap-3">
                 <Button type="button" variant="outline" onClick={resetForm} disabled={isPending}>
-                  cancel
+          cancel
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? 'saving...' : 'save'}
+          {isPending ? 'saving...' : 'save'}
                 </Button>
               </div>
             </form>
@@ -353,15 +354,3 @@ function formatDate(value: string | Date) {
   if (Number.isNaN(date.getTime())) return '--'
   return new Intl.DateTimeFormat('zh-CN').format(date)
 }
-
-const AVAILABLE_INTERESTS = [
-  'Frontend Development	',
-  'Backend Development	',
-  'Mobile Development	',
-  'AI / Data Science',
-  'Technical Writing	',
-  'Open Source Contribution	',
-  'Product Design	',
-  'Reading',
-  'Travel',
-]
