@@ -117,7 +117,7 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
         </div>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg bg-white">
         <article
           className="prose max-w-none text-gray-700"
           dangerouslySetInnerHTML={{
