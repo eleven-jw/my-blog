@@ -48,13 +48,7 @@ export default async function EditPostPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <PostBreadcrumb
-        items={[
-          { label: '首页', href: '/' },
-          { label: '文章管理', href: '/posts' },
-          { label: '编辑文章' },
-        ]}
-      />
+      <PostBreadcrumb segmentOverrides={{ [post.id]: null }} />
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">编辑文章</h1>
         <p className="text-sm text-gray-500">对文章进行修改并保存，系统会自动更新发布时间。</p>

@@ -83,15 +83,16 @@ export default async function PostDetailPage({ params, searchParams }: PageProps
   const parentHref = isFromExplore ? '/explore' : '/posts'
   const parentLabel = isFromExplore ? '文章广场' : '文章管理'
   const backHref = parentHref
-  const breadcrumbItems = [
-    { label: '首页', href: '/' },
-    { label: parentLabel, href: parentHref },
-    { label: post.title },
-  ]
 
   return (
     <div className="space-y-6">
-      <PostBreadcrumb items={breadcrumbItems} />
+      <PostBreadcrumb
+        segmentOverrides={{
+          posts: { label: parentLabel, href: parentHref },
+          [post.id]: null,
+        }}
+        appendItems={[{ label: post.title }]}
+      />
       <div className="flex items-center justify-between gap-3">
         <Link
           href={backHref}
