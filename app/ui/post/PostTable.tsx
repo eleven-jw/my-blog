@@ -56,7 +56,7 @@ const columns = (
     meta: {
       headerClassName: 'w-[12%] text-left',
     },
-    cell: ({ row }) => row.original.author?.name ?? '未知作者',
+    cell: ({ row }) => row.original.author?.name ?? 'Unknown Author',
   },
   {
     accessorKey: 'status',
