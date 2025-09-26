@@ -5,8 +5,12 @@ import MBLOGLogo from './mblog-logo';
 import { PowerIcon } from '@heroicons/react/24/outline';
 import { signOut } from 'next-auth/react';
 import { useRouter } from "next/navigation"; 
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun } from 'lucide-react';
 
 export default function SideNav() {
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const handleSignOut = async() => {
     console.log('handleSignOut')
@@ -27,6 +31,14 @@ export default function SideNav() {
         className="mb-2 flex h-20 items-end justify-start rounded-md bg-blue-600 p-4 md:h-40"
         href="/"
       >
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        aria-label={`切换到${theme === 'light' ? '暗黑' : '亮色'}模式`}
+      >
+        {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+      </Button>
         <div className="w-32 text-white md:w-40">
           <MBLOGLogo />
         </div>
