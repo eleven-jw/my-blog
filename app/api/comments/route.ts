@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const postId = searchParams.get('id')
+    const postId = searchParams.get('postId')
 
     if (!postId) {
       return NextResponse.json({ error: 'need ID' }, { status: 400 });

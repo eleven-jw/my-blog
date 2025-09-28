@@ -17,7 +17,6 @@ export default function CommentForm({ postId, onSubmit}: CommentFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('formData', formData);
     try {
       setLoading(true);
       setError(null);
@@ -26,13 +25,12 @@ export default function CommentForm({ postId, onSubmit}: CommentFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ postId, authorId: session?.user?.id, ...formData }),
       });
-
       if (!res.ok) {
         console.log('res', res.ok);
         const errData = await res.json();
         throw new Error(errData.error || '提交失败');
       }
-
+      onSubmit();
       setFormData({content: '' });
     } catch (err) {
       setError(err.message || 'error提交失败');
