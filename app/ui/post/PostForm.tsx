@@ -59,12 +59,14 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
         status,
       }
 
+      if (status === 'scheduled') {
+        payload.publishedAt = publishedAt
+      }
+
       if (isEditMode && postId) {
         payload.id = postId
       }
-      if (isEditMode && publishedAt) {
-        payload.publishedAt = status === 'scheduled' ? publishedAt : getCurrentDate()
-      }
+      
 
       const response = await fetch('/api/posts/list', {
         method: isEditMode ? 'PUT' : 'POST',

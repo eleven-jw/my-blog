@@ -81,14 +81,14 @@ const columns = (
     },
     cell: ({ row }) => formatDate(row.original.createdAt),
   },
-  {
-    accessorKey: 'publishedAt',
-    header: '发布时间',
-    meta: {
-      headerClassName: 'w-[10%] text-left whitespace-nowrap',
-    },
-    cell: ({ row }) => formatDate(row.original.publishedAt),
-  },
+  // {
+  //   accessorKey: 'publishedAt',
+  //   header: '发布时间',
+  //   meta: {
+  //     headerClassName: 'w-[10%] text-left whitespace-nowrap',
+  //   },
+  //   cell: ({ row }) => formatDate(row.original.publishedAt),
+  // },
   {
     id: 'actions',
     header: '操作',

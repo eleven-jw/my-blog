@@ -155,6 +155,22 @@ export async function POST(request: Request) {
     const status = normalizeStatus(body?.status)
     const plainText = content.replace(/<[^>]*>/g, '').trim()
 
+     if (status === 'scheduled') {
+      const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null;
+      if (!publishedAt) {
+        return NextResponse.json(
+          { code: 422, message: 'need set publish time' },
+          { status: 422 }
+        );
+      }
+      if (publishedAt <= new Date()) {
+        return NextResponse.json(
+          { code: 422, message: 'publish time should later than now' },
+          { status: 422 }
+        );
+      }
+    }
+
     if (!title || !plainText) {
       return NextResponse.json(
         { code: 422, message: 'Title and content are required' },
@@ -174,6 +190,7 @@ export async function POST(request: Request) {
           status,
           slug,
           authorId: session.user.id,
+          publishedAt: status === 'scheduled' ? new Date(body.publishedAt) : undefined,
 
         },
         select: postDetailSelect,
@@ -241,6 +258,8 @@ export async function PUT(request: Request) {
         id: true,
         authorId: true,
         title: true,
+        status: true,
+        publishedAt: true,
       },
     })
 
@@ -259,6 +278,32 @@ export async function PUT(request: Request) {
     }
 
     const data: Prisma.PostUpdateInput = {}
+
+    if (body?.status !== undefined) {
+      const newStatus = normalizeStatus(body.status);
+      data.status = newStatus;
+
+      if (newStatus === 'scheduled') {
+        const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null;
+        if (!publishedAt) {
+          return NextResponse.json(
+            { code: 422, message: 'need to set publish time' },
+            { status: 422 }
+          );
+        }
+        if (publishedAt <= new Date()) {
+          return NextResponse.json(
+            { code: 422, message: 'pulish time should later than now' },
+            { status: 422 }
+          );
+        }
+        data.publishedAt = publishedAt;
+      } else {
+        if (post.status === 'scheduled' && newStatus !== 'scheduled') {
+          data.publishedAt = new Date();
+        }
+      }
+    }
 
     if (typeof body?.title === 'string' && body.title.trim()) {
       const nextTitle = body.title.trim()
