@@ -166,7 +166,8 @@ export default function PostsPage() {
   )
 
   const handleDeleteRequest = useCallback((postId: string) => {
-    setTargetPostId(postId)
+    console.log('handleDeleteRequest');
+    // setTargetPostId(postId)
     setDialogOpen(true)
   }, [])
 

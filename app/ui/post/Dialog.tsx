@@ -38,7 +38,7 @@ export default function Dialog({
           <Button variant="outline" onClick={onCancel} disabled={cancelDisabled}>
             {cancelText}
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={confirmDisabled}>
+          <Button className="bg-blue-500 text-white" variant="outline" onClick={onConfirm} disabled={confirmDisabled}>
             {confirmText}
           </Button>
         </div>

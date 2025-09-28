@@ -13,10 +13,8 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
   const [comments, setComments] = useState(initialComments);
 
   const handleCommentSubmit = async () => {
-    console.log('handleCommentSubmit');
     try {
       const timestamp = Date.now();
-      console.log('url', `/api/comments/?postId=${postId}&t=${timestamp}`);
       const res = await fetch(`/api/comments/?postId=${postId}&t=${timestamp}`);
       if (!res.ok) {
         const errData = await res.json();

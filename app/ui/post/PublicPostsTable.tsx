@@ -12,6 +12,7 @@ export type PublicPostListItem = {
   likes: number
   views: number
   createdAt: string
+  publishedAt: string
   author: {
     id: string
     name: string | null
@@ -74,11 +75,19 @@ const columns = (
   },
   {
     accessorKey: 'createdAt',
-    header: '发布时间',
+    header: '创建时间',
     meta: {
       headerClassName: 'w-[10%] text-left whitespace-nowrap',
     },
     cell: ({ row }) => formatDate(row.original.createdAt),
+  },
+  {
+    accessorKey: 'publishedAt',
+    header: '发布时间',
+    meta: {
+      headerClassName: 'w-[10%] text-left whitespace-nowrap',
+    },
+    cell: ({ row }) => formatDate(row.original.publishedAt),
   },
   {
     id: 'actions',

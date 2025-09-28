@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import RichTextEditor from "@/app/ui/post/RichTextEditor"
+import { getTomorrowDate, getCurrentDate } from '@/lib/utils'
 
 type PostFormValues = {
   title: string
   content: string
   status: string
+  publishedAt: string
 }
 
 type PostFormProps = {
@@ -18,9 +20,9 @@ type PostFormProps = {
 }
 
 const statusOptions: Array<{ value: string; label: string }> = [
-  { value: 'draft', label: '草稿' },
-  { value: 'published', label: '已发布' },
-  { value: 'scheduled', label: '计划发布' },
+  { value: 'draft', label: 'draft' },
+  { value: 'published', label: 'published' },
+  { value: 'scheduled', label: 'scheduled' },
 ]
 
 export default function PostForm({ postId, initialValues }: PostFormProps) {
@@ -28,12 +30,17 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [content, setContent] = useState(initialValues?.content ?? '<p></p>')
   const [status, setStatus] = useState(initialValues?.status ?? 'published')
+  const [publishedAt, setPublishedAt] = useState(initialValues?.publishedAt ?? getCurrentDate())
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   const isEditMode = Boolean(postId)
 
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('event', event.target.value);
+    setPublishedAt(event.target.value);
+  }
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubmitting(true)
@@ -43,7 +50,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
     try {
       const plainText = content.replace(/<[^>]*>/g, '').trim()
       if (!plainText) {
-        throw new Error('正文不能为空')
+        throw new Error('content should not be empty')
       }
 
       const payload: Record<string, string> = {
@@ -55,6 +62,9 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
       if (isEditMode && postId) {
         payload.id = postId
       }
+      if (isEditMode && publishedAt) {
+        payload.publishedAt = status === 'scheduled' ? publishedAt : getCurrentDate()
+      }
 
       const response = await fetch('/api/posts/list', {
         method: isEditMode ? 'PUT' : 'POST',
@@ -65,15 +75,15 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
       })
 
       if (!response.ok) {
-        throw new Error('保存文章失败')
+        throw new Error('Failed to save')
       }
 
       const data = await response.json()
       if (data.code !== 200) {
-        throw new Error(data.message || '保存文章失败')
+        throw new Error(data.message || 'Failed to save')
       }
 
-      setSuccess(isEditMode ? '文章更新成功' : '文章创建成功')
+      setSuccess(isEditMode ? 'update sucess' : 'create success')
 
       const nextPostId = data.data?.id ?? postId
       if (nextPostId) {
@@ -82,7 +92,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
         router.push('/posts')
       }
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : '保存文章失败'
+      const message = submitError instanceof Error ? submitError.message : 'Failed to save'
       setError(message)
     } finally {
       setSubmitting(false)
@@ -94,20 +104,20 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700" htmlFor="post-title">
-            标题
+            Title
           </label>
           <Input
             id="post-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="请输入文章标题"
+            placeholder="please input title"
             required
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700" htmlFor="post-status">
-            状态
+            Status
           </label>
           <select
             id="post-status"
@@ -123,9 +133,20 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
           </select>
         </div>
 
+        {status === 'scheduled' && (
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Will Publish At:</label>
+            <Input
+              type="date"
+              value={publishedAt}
+              min={getTomorrowDate()}
+              onChange={handleInputChange}
+            />
+          </div>
+        )}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">正文</label>
-          <RichTextEditor value={content} onChange={setContent} placeholder="请输入文章内容" />
+          <label className="text-sm font-medium text-gray-700">Content</label>
+          <RichTextEditor value={content} onChange={setContent} placeholder="please input content" />
         </div>
 
         {error && (
@@ -142,7 +163,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={submitting}>
-            {submitting ? '保存中...' : '保存文章'}
+            {submitting ? 'saving...' : 'save'}
           </Button>
           <Button
             type="button"
@@ -150,7 +171,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
             onClick={() => router.back()}
             disabled={submitting}
           >
-            取消
+            Cancel
           </Button>
         </div>
       </form>

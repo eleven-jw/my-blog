@@ -13,6 +13,7 @@ export type PostListItem = {
   views: number
   createdAt: string
   updatedAt: string
+  publisedAt: string
   author: {
     id: string
     name: string | null
@@ -102,6 +103,14 @@ const columns = (
     cell: ({ row }) => formatDate(row.original.createdAt),
   },
   {
+    accessorKey: 'publisedAt',
+    header: '发布时间',
+    meta: {
+      headerClassName: 'w-[10%] text-left',
+    },
+    cell: ({ row }) => formatDate(row.original.publisedAt),
+  },
+  {
     accessorKey: 'updatedAt',
     header: '更新时间',
     meta: {
@@ -122,10 +131,16 @@ const columns = (
         <Button variant="ghost" size="sm" onClick={() => onView(row.original.id)}>
           查看
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => onEdit(row.original.id)}>
+        <Button variant="ghost" size="sm" onClick={(e) => {
+          e.stopPropagation();
+          onEdit(row.original.id)
+        }}>
           编辑
         </Button>
-        <Button variant="destructive" size="sm" onClick={() => onDelete(row.original.id)}>
+        <Button variant="ghost" size="sm" onClick={(e) => {
+          e.stopPropagation();
+          onDelete(row.original.id)
+        }}>
           删除
         </Button>
       </div>

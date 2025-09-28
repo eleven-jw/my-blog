@@ -50,7 +50,7 @@ export default async function EditPostPage({ params }: PageProps) {
     <div className="space-y-6">
       <PostBreadcrumb segmentOverrides={{ [post.id]: null }} />
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">编辑文章</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Edit</h1>
         <p className="text-sm text-gray-500">对文章进行修改并保存，系统会自动更新发布时间。</p>
       </div>
       <PostForm

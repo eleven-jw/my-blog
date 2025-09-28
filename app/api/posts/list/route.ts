@@ -15,6 +15,7 @@ const postListSelect = {
   views: true,
   createdAt: true,
   updatedAt: true,
+  publishedAt: true,
   author: {
     select: {
       id: true,
@@ -43,6 +44,7 @@ const postDetailSelect = {
   },
   createdAt: true,
   updatedAt: true,
+  publishedAt: true,
   authorId: true,
   author: {
     select: {
@@ -69,6 +71,7 @@ type PostListItem = {
   views: number
   createdAt: string
   updatedAt: string
+  publishedAt: string
   author: {
     id: string
     name: string | null
@@ -86,6 +89,7 @@ type PostDetailData = {
   tags: Array<{ id: string; name: string }>
   createdAt: string
   updatedAt: string
+  publishedAt: string
   author: {
     id: string
     name: string | null
@@ -145,10 +149,10 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
+    console.log('body', body);
     const title = typeof body?.title === 'string' ? body.title.trim() : ''
     const content = typeof body?.content === 'string' ? body.content : ''
     const status = normalizeStatus(body?.status)
-
     const plainText = content.replace(/<[^>]*>/g, '').trim()
 
     if (!title || !plainText) {
@@ -170,6 +174,7 @@ export async function POST(request: Request) {
           status,
           slug,
           authorId: session.user.id,
+
         },
         select: postDetailSelect,
       })
