@@ -187,7 +187,7 @@ export async function POST(request: Request) {
 
     const slug = await generateUniqueSlug(title)
 
-    const sanitizedContent = sanitizeContent(content)
+    const sanitizedContent = sanitizeForRender(content)
 
     const created = await prisma.$transaction(async (tx) => {
       const post = await tx.post.create({
