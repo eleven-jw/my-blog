@@ -42,5 +42,9 @@ export function sanitizeForRender(html: string) {
         display: [/^block$/, /^inline-block$/, /^inline$/],
       },
     },
+    nonTextTags: ['style', 'script', 'textarea', 'option'],
+    parser: {
+      lowerCaseTags: true,
+    },
   })
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { sanitizeForRender } from '@/lib/sanitizeHtml'
 
 const CommentSchema = z.object({
   postId: z.string(),
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     const comment = await prisma.comment.create({
       data: {
-        content: validated.content,
+        content: sanitizeForRender(validated.content),
         postId: validated.postId,
         authorId: validated.authorId,
       },
