@@ -41,6 +41,17 @@ export default async function Page({ params, searchParams }: PageProps) {
 
 
   const { id } = params
+
+    try {
+      await prisma.post.update({
+        where: { id },
+        data: { views: { increment: 1 } },
+      });
+    }
+    catch (err) {
+      console.log('failed to update views')
+    }
+
   const post = await prisma.post.findUnique({
     where: { id },
     select: {
@@ -99,6 +110,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       author: true
     },
   });
+
   const formattedComments = comments.map(comment => ({
     ...comment,
     authorName: comment.author?.name ?? 'Unknown Author',
