@@ -35,9 +35,8 @@ export default function SideNav() {
         variant="ghost"
         size="sm"
         onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-        aria-label={`切换到${theme === 'light' ? '暗黑' : '亮色'}模式`}
       >
-        {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        {/* {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />} */}
       </Button>
         <div className="w-32 text-white md:w-40">
           <MBLOGLogo />

@@ -1,17 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import RichTextEditor from "@/app/ui/post/RichTextEditor"
 import { getTomorrowDate, getCurrentDate } from '@/lib/utils'
+import TagInput from '@/app/ui/post/TagInput'
+import { Tag } from '@/types/post'
 
 type PostFormValues = {
   title: string
   content: string
   status: string
   publishedAt: string
+  tags: Tag[]
 }
 
 type PostFormProps = {
@@ -31,11 +34,77 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
   const [content, setContent] = useState(initialValues?.content ?? '<p></p>')
   const [status, setStatus] = useState(initialValues?.status ?? 'published')
   const [publishedAt, setPublishedAt] = useState(initialValues?.publishedAt ?? getCurrentDate())
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [existingTags, setExistingTags] = useState<Tag[]>([]);
+  const [tagError, setTagError] = useState('');
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   const isEditMode = Boolean(postId)
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const data = await fetch('/api/tags');
+        if (!data.ok) throw new Error('Failed to get tags');
+
+        const tags = await data.json();
+        if (tags.code !== 200) throw new Error(tags.message);
+        setExistingTags(tags.data);
+      } catch (err) {
+        console.error('Failed to get tags:', err);
+      }
+    };
+    loadTags();
+  }, []);
+  const handleAddNewTag = async (tagName: string) => {
+    const trimmed = tagName.trim();
+    
+    if (trimmed.length > 20) {
+      setTagError(`please <= 20 `);
+      return;
+    }
+    
+    const isExist = existingTags.some(t => t.name === trimmed) || 
+                   selectedTags.some(t => t.name === trimmed);
+    if (isExist) {
+      setTagError('tag exits');
+      return;
+    }
+    
+    if (selectedTags.length >= 5) {
+      setTagError('please <= 5');
+      return;
+    }
+    
+    const tempId = Date.now().toString();
+    setSelectedTags(prev => [...prev, { id: tempId, name: trimmed }]);
+    setTagError('');
+  };
+
+  const handleToggleExistingTag = (tag: Tag) => {
+    setSelectedTags(prev => {
+      const isSelected = prev.some(t => t.id === tag.id);
+      if (isSelected) {
+        return prev.filter(t => t.id !== tag.id);
+      } else {
+        if (prev.length >= 5) {
+          setTagError('please <= 5');
+          return prev;
+        }
+        if (prev.some(t => t.name === tag.name)) {
+          setTagError('tag exits');
+          return prev;
+        }
+        return [...prev, tag];
+      }
+    });
+    setTagError('');
+  };
+
+  const handleRemoveTag = (tag: Tag) => {
+    setSelectedTags(prev => prev.filter(t => t.id !== tag.id));
+  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('event', event.target.value);
@@ -53,10 +122,11 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
         throw new Error('content should not be empty')
       }
 
-      const payload: Record<string, string> = {
+      const payload: Record<string, string | string[] | Tag[]> = {
         title: title.trim(),
         content,
         status,
+        tags: selectedTags.map(tag => tag.name)
       }
 
       if (status === 'scheduled') {
@@ -151,6 +221,14 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
           <RichTextEditor value={content} onChange={setContent} placeholder="please input content" />
         </div>
 
+        <TagInput
+          selectedTags={selectedTags}
+          existingTags={existingTags}
+          onToggleExistingTag={handleToggleExistingTag}
+          onAddNewTag={handleAddNewTag}
+          onRemoveTag={handleRemoveTag}
+          error={tagError}
+        />
         {error && (
           <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {error}

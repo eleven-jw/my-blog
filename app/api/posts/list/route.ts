@@ -149,11 +149,18 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    console.log('body', body);
     const title = typeof body?.title === 'string' ? body.title.trim() : ''
     const content = typeof body?.content === 'string' ? body.content : ''
     const status = normalizeStatus(body?.status)
     const plainText = content.replace(/<[^>]*>/g, '').trim()
+    
+    let tags: string[] = [];
+    if (Array.isArray(body?.tags)) {
+      tags = body.tags
+        .filter(tag => typeof tag === 'string' && tag.trim().length > 0);
+    } else {
+      tags = [];
+    }
 
      if (status === 'scheduled') {
       const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null;
@@ -191,6 +198,12 @@ export async function POST(request: Request) {
           slug,
           authorId: session.user.id,
           publishedAt: status === 'scheduled' ? new Date(body.publishedAt) : undefined,
+          tags: {
+            connectOrCreate: tags.map(tagName => ({
+              where: { name: tagName },
+              create: { name: tagName }
+            }))
+          }
 
         },
         select: postDetailSelect,

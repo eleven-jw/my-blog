@@ -76,7 +76,6 @@ export default async function Page({ params, searchParams }: PageProps) {
   if (!post) {
     notFound()
   }
-
   const isOwner = post.authorId === currentUser.id
   const isAdmin = currentUser.role === 'ADMIN'
   const isPublished = post.status === 'published'
@@ -97,7 +96,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   const comments = await prisma.comment.findMany({
     where: { postId: post.id },
     include: {
-      author: true // 加载作者信息
+      author: true
     },
   });
   const formattedComments = comments.map(comment => ({
