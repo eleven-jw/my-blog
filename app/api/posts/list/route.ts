@@ -11,7 +11,6 @@ const postListSelect = {
   id: true,
   title: true,
   status: true,
-  likes: true,
   views: true,
   createdAt: true,
   updatedAt: true,
@@ -25,6 +24,7 @@ const postListSelect = {
   _count: {
     select: {
       comments: true,
+      likes: true,
     },
   },
 } satisfies Prisma.PostSelect
@@ -34,7 +34,6 @@ const postDetailSelect = {
   title: true,
   content: true,
   status: true,
-  likes: true,
   views: true,
   tags: {
     select: {
@@ -55,6 +54,7 @@ const postDetailSelect = {
   _count: {
     select: {
       comments: true,
+      likes: true,
     },
   },
 } satisfies Prisma.PostSelect
@@ -596,7 +596,7 @@ function toPostListItem(post: PostListQueryResult): PostListItem {
     id: post.id,
     title: post.title,
     status: post.status ?? 'draft',
-    likes: post.likes ?? 0,
+    likes: post._count.likes ?? 0,
     views: post.views ?? 0,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
@@ -614,7 +614,7 @@ function toPostDetail(post: PostDetailQueryResult): PostDetailData {
     title: post.title,
     content: post.content,
     status: post.status ?? 'draft',
-    likes: post.likes ?? 0,
+    likes: post._count.likes ?? 0,
     views: post.views ?? 0,
     tags: post.tags ?? [],
     createdAt: post.createdAt.toISOString(),

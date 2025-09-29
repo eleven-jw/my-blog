@@ -94,7 +94,7 @@ model Post {
   authorId    String
   tags        Tag[] // 隐式多对多：不要加 @relation references
   views       Int            @default(0)
-  likes       Int            @default(0)
+  likes       Like[]
   comments    Comment[] // <- 补上对应关系（一对多）
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -131,6 +131,19 @@ model UserFavorite {
   @@unique([userId, postId])
 }
 
+model Like {
+  id        String   @id @default(cuid()) // 主键
+  userId    String   // 点赞用户 ID（可选，用于记录谁点赞）
+  postId    String   // 关联 Post 的外键
+  createdAt DateTime @default(now()) // 点赞时间
+
+  // 唯一约束：一个用户只能点赞一次
+  @@unique([userId, postId])
+
+  // 关联到 Post 模型（必填，否则 Prisma 无法识别反向关联）
+  post      Post     @relation(fields: [postId], references: [id])
+}
+
 model Tag {
   id    String @id @default(cuid())
   name  String @unique
@@ -163,4 +176,5 @@ enum CommentStatus {
 enum PostStatus {
   DRAFT
   PUBLISHED
+  SCHEDULED
 }
