@@ -42,15 +42,21 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   const { id } = params
 
-    try {
-      await prisma.post.update({
-        where: { id },
-        data: { views: { increment: 1 } },
-      });
-    }
-    catch (err) {
-      console.log('failed to update views')
-    }
+  try {
+    await prisma.post.update({
+      where: { id },
+      data: {
+        views: { increment: 1 },
+        author: {
+          update: {
+            totalViews: { increment: 1 },
+          },
+        },
+      },
+    })
+  } catch (err) {
+    console.log('failed to update views')
+  }
 
   const post = await prisma.post.findUnique({
     where: { id },
