@@ -1,20 +1,21 @@
 'use client';
 
-import { ThemeProvider } from 'next-themes';
+import { ThemeProvider } from "next-themes"
 
-export default function ThemeWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+type ThemeWrapperProps = {
+  children: React.ReactNode
+}
+
+export default function ThemeWrapper({ children }: ThemeWrapperProps) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
       storageKey="theme"
+      disableTransitionOnChange
     >
       {children}
     </ThemeProvider>
-  );
+  )
 }

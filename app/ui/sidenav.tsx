@@ -5,13 +5,19 @@ import MBLOGLogo from './mblog-logo';
 import { PowerIcon } from '@heroicons/react/24/outline';
 import { signOut } from 'next-auth/react';
 import { useRouter } from "next/navigation"; 
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
+import { Button } from '@/components/ui/button'
+import { Moon, Sun } from 'lucide-react'
 
 export default function SideNav() {
-  const { theme, setTheme } = useTheme();
-  const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme()
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const handleSignOut = async() => {
     console.log('handleSignOut')
     try {
@@ -34,9 +40,16 @@ export default function SideNav() {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        onClick={() => setTheme((resolvedTheme ?? 'light') === 'light' ? 'dark' : 'light')}
+        aria-label="Toggle theme"
       >
-        {/* {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />} */}
+        {mounted ? (
+          (resolvedTheme ?? 'light') === 'light' ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )
+        ) : null}
       </Button>
         <div className="w-32 text-white md:w-40">
           <MBLOGLogo />
