@@ -87,6 +87,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     notFound()
   }
   const likeCount = await prisma.like.count({ where: { postId: post.id } })
+  const favoriteCount = await prisma.userFavorite.count({ where: { postId: post.id } })
   const isOwner = post.authorId === currentUser.id
   const isAdmin = currentUser.role === 'ADMIN'
   const isPublished = post.status === 'published'
@@ -116,14 +117,24 @@ export default async function Page({ params, searchParams }: PageProps) {
     authorName: comment.author?.name ?? 'Unknown Author',
   }));
 
-  let isLiked = false;
+  let isLiked = false
   isLiked = !!await prisma.like.findUnique({
     where: { userId_postId: { userId: session.user.id, postId: post.id } },
-  });
+  })
+
+  const isFavorited = !!await prisma.userFavorite.findUnique({
+    where: { userId_postId: { userId: session.user.id, postId: post.id } },
+  })
   return (
     <div className="space-y-4">
       <PostBreadcrumb items={breadcrumbItems} />
-      <PostContent post={post} isLiked={isLiked} initialLikeCount={likeCount}></PostContent>
+      <PostContent
+        post={post}
+        isLiked={isLiked}
+        initialLikeCount={likeCount}
+        initialFavoriteCount={favoriteCount}
+        isFavorited={isFavorited}
+      />
       <CommentSection postId={post.id} initialComments={formattedComments}></CommentSection>
     </div>
   )
