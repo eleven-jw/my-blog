@@ -1,13 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import RichTextEditor from "@/app/ui/post/RichTextEditor"
-import { getTomorrowDate, getCurrentDate } from '@/lib/utils'
-import TagInput from '@/app/ui/post/TagInput'
-import { Tag } from '@/types/post'
+import { getTomorrowDate, getCurrentDate } from "@/lib/utils"
+import TagInput from "@/app/ui/post/TagInput"
+import { Tag } from "@/types/post"
+import {
+  MAX_TAGS_PER_POST,
+  TAG_NAME_MAX_LENGTH,
+} from "@/lib/tagRules"
 
 type PostFormValues = {
   title: string
@@ -34,9 +38,9 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
   const [content, setContent] = useState(initialValues?.content ?? '<p></p>')
   const [status, setStatus] = useState(initialValues?.status ?? 'published')
   const [publishedAt, setPublishedAt] = useState(initialValues?.publishedAt ?? getCurrentDate())
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  const [existingTags, setExistingTags] = useState<Tag[]>([]);
-  const [tagError, setTagError] = useState('');
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(initialValues?.tags ?? [])
+  const [existingTags, setExistingTags] = useState<Tag[]>([])
+  const [tagError, setTagError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -48,38 +52,71 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
         const data = await fetch('/api/tags');
         if (!data.ok) throw new Error('Failed to get tags');
 
-        const tags = await data.json();
-        if (tags.code !== 200) throw new Error(tags.message);
-        setExistingTags(tags.data);
+        const tags = await data.json()
+        if (tags.code !== 200) throw new Error(tags.message)
+        const deduped = Array.from(
+          new Map(tags.data.map((tag: Tag) => [tag.name, tag])).values()
+        )
+        setExistingTags(deduped)
       } catch (err) {
         console.error('Failed to get tags:', err);
       }
     };
     loadTags();
   }, []);
+  useEffect(() => {
+    if (!initialValues?.tags || !initialValues.tags.length) {
+      return
+    }
+
+    const incomingTags = initialValues.tags
+    setSelectedTags((prev) => (prev.length ? prev : incomingTags))
+    setExistingTags((prev) => {
+      const map = new Map<string, Tag>()
+      prev.forEach((tag) => {
+        map.set(tag.name, tag)
+      })
+      incomingTags.forEach((tag) => {
+        map.set(tag.name, tag)
+      })
+      return Array.from(map.values())
+    })
+  }, [initialValues?.tags])
   const handleAddNewTag = async (tagName: string) => {
     const trimmed = tagName.trim();
     
-    if (trimmed.length > 20) {
-      setTagError(`please <= 20 `);
+    if (!trimmed) {
+      setTagError('please input tag name')
       return;
     }
-    
+
+    if (trimmed.length > TAG_NAME_MAX_LENGTH) {
+      setTagError(`tag should no more than ${TAG_NAME_MAX_LENGTH} `)
+      return
+    }
+
     const isExist = existingTags.some(t => t.name === trimmed) || 
                    selectedTags.some(t => t.name === trimmed);
     if (isExist) {
       setTagError('tag exits');
       return;
     }
-    
-    if (selectedTags.length >= 5) {
-      setTagError('please <= 5');
-      return;
+
+    if (selectedTags.length >= MAX_TAGS_PER_POST) {
+      setTagError(`please choose less than ${MAX_TAGS_PER_POST} tags`)
+      return
     }
-    
-    const tempId = Date.now().toString();
-    setSelectedTags(prev => [...prev, { id: tempId, name: trimmed }]);
-    setTagError('');
+
+    const tempId = `new-${Date.now()}`
+    const newTag = { id: tempId, name: trimmed }
+    setSelectedTags(prev => [...prev, newTag])
+    setExistingTags(prev => {
+      if (prev.some(tag => tag.name === trimmed)) {
+        return prev
+      }
+      return [...prev, newTag]
+    })
+    setTagError('')
   };
 
   const handleToggleExistingTag = (tag: Tag) => {
@@ -88,8 +125,8 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
       if (isSelected) {
         return prev.filter(t => t.id !== tag.id);
       } else {
-        if (prev.length >= 5) {
-          setTagError('please <= 5');
+        if (prev.length >= MAX_TAGS_PER_POST) {
+          setTagError(`please choose less than ${MAX_TAGS_PER_POST} tags`)
           return prev;
         }
         if (prev.some(t => t.name === tag.name)) {
@@ -107,8 +144,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('event', event.target.value);
-    setPublishedAt(event.target.value);
+    setPublishedAt(event.target.value)
   }
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -227,6 +263,8 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
           onToggleExistingTag={handleToggleExistingTag}
           onAddNewTag={handleAddNewTag}
           onRemoveTag={handleRemoveTag}
+          maxTags={MAX_TAGS_PER_POST}
+          tagMaxLength={TAG_NAME_MAX_LENGTH}
           error={tagError}
         />
         {error && (

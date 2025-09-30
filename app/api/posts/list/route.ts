@@ -4,6 +4,11 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import type { Prisma, Role } from '@prisma/client'
 import { sanitizeForRender } from '@/lib/sanitizeHtml'
+import {
+  MAX_TAGS_PER_POST,
+  TAG_NAME_MAX_LENGTH,
+  TAG_NAME_MIN_LENGTH,
+} from '@/lib/tagRules'
 
 const allowedStatuses = new Set(['draft', 'published', 'scheduled'])
 
@@ -154,13 +159,15 @@ export async function POST(request: Request) {
     const status = normalizeStatus(body?.status)
     const plainText = content.replace(/<[^>]*>/g, '').trim()
     
-    let tags: string[] = [];
-    if (Array.isArray(body?.tags)) {
-      tags = body.tags
-        .filter(tag => typeof tag === 'string' && tag.trim().length > 0);
-    } else {
-      tags = [];
+    const tagResult = normalizeTagNames(body?.tags)
+    if (!tagResult.success) {
+      return NextResponse.json(
+        { code: 422, message: tagResult.message },
+        { status: 422 }
+      )
     }
+
+    const tags = tagResult.tags
 
      if (status === 'scheduled') {
       const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null;
@@ -198,12 +205,16 @@ export async function POST(request: Request) {
           slug,
           authorId: session.user.id,
           publishedAt: status === 'scheduled' ? new Date(body.publishedAt) : undefined,
-          tags: {
-            connectOrCreate: tags.map(tagName => ({
-              where: { name: tagName },
-              create: { name: tagName }
-            }))
-          }
+          ...(tags.length
+            ? {
+                tags: {
+                  connectOrCreate: tags.map((tagName) => ({
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  })),
+                },
+              }
+            : {}),
 
         },
         select: postDetailSelect,
@@ -340,6 +351,27 @@ export async function PUT(request: Request) {
 
     if (body?.status !== undefined) {
       data.status = normalizeStatus(body.status)
+    }
+
+    if (body?.tags !== undefined) {
+      const tagResult = normalizeTagNames(body.tags)
+      if (!tagResult.success) {
+        return NextResponse.json(
+          { code: 422, message: tagResult.message },
+          { status: 422 }
+        )
+      }
+
+      const normalizedTags = tagResult.tags
+      data.tags = normalizedTags.length
+        ? {
+            set: [],
+            connectOrCreate: normalizedTags.map((tagName) => ({
+              where: { name: tagName },
+              create: { name: tagName },
+            })),
+          }
+        : { set: [] }
     }
 
     if (!Object.keys(data).length) {
@@ -634,6 +666,65 @@ function normalizeStatus(status: unknown): string {
 
   const normalized = status.toLowerCase()
   return allowedStatuses.has(normalized) ? normalized : 'draft'
+}
+
+type NormalizeTagsSuccess = { success: true; tags: string[] }
+type NormalizeTagsError = { success: false; message: string }
+type NormalizeTagsResult = NormalizeTagsSuccess | NormalizeTagsError
+
+function normalizeTagNames(input: unknown): NormalizeTagsResult {
+  if (input === undefined || input === null) {
+    return { success: true, tags: [] }
+  }
+
+  if (!Array.isArray(input)) {
+    return { success: false, message: '标签格式不正确' }
+  }
+
+  const cleaned: string[] = []
+  const seen = new Set<string>()
+
+  for (const raw of input) {
+    if (typeof raw !== 'string') {
+      continue
+    }
+
+    const sanitized = sanitizePlainTag(raw)
+    if (!sanitized) {
+      continue
+    }
+
+    if (sanitized.length < TAG_NAME_MIN_LENGTH) {
+      return { success: false, message: 'tag is too short' }
+    }
+
+    if (sanitized.length > TAG_NAME_MAX_LENGTH) {
+      return {
+        success: false,
+        message: `tag should no more ${TAG_NAME_MAX_LENGTH}`,
+      }
+    }
+
+    const key = sanitized.toLowerCase()
+    if (!seen.has(key)) {
+      seen.add(key)
+      cleaned.push(sanitized)
+    }
+  }
+
+  if (cleaned.length > MAX_TAGS_PER_POST) {
+    return {
+      success: false,
+      message: `最多只能选择或创建 ${MAX_TAGS_PER_POST} 个标签`,
+    }
+  }
+
+  return { success: true, tags: cleaned }
+}
+
+function sanitizePlainTag(value: string): string {
+  const sanitized = sanitizeForRender(value)
+  return sanitized.replace(/\s+/g, ' ').trim()
 }
 
 function createSlugFragment(title: string): string {

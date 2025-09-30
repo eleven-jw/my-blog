@@ -59,6 +59,7 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
   const [comments, setComments] = useState<PostComment[]>(initialComments)
 
   const commentCount = comments.length
+  const tagNames = post.tags?.map((tag) => tag.name).filter(Boolean) ?? []
 
   const handleCommentsChange = (nextComments: PostComment[]) => {
     setComments(nextComments)
@@ -119,8 +120,8 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
             <span>Favorites:{favoriteCount ?? 0}</span>
             <span>Comments:{commentCount ?? 0}</span>
             <span>
-              Tags:
-              {post?.tags?.length ? post.tags.map((tag) => tag.name).join('、') : 'No tags'}
+              Tags:{' '}
+              {tagNames.length ? tagNames.join('、') : 'no tags'}
             </span>
           </div>
         </div>

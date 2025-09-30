@@ -35,6 +35,12 @@ export default async function EditPostPage({ params }: PageProps) {
       content: true,
       status: true,
       authorId: true,
+      tags: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   })
 
@@ -59,6 +65,7 @@ export default async function EditPostPage({ params }: PageProps) {
           title: post.title,
           content: post.content ?? '',
           status: post.status ?? 'draft',
+          tags: post.tags ?? [],
         }}
       />
     </div>
