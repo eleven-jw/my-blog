@@ -1,17 +1,16 @@
 'use client';
-import { useState } from 'react';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 import { SessionProvider } from 'next-auth/react';
+import type { PostComment } from './types';
 
 type CommentSectionProps = {
   postId: string;
-  initialComments: any[];
+  comments: PostComment[];
+  onCommentsChange?: (comments: PostComment[]) => void;
 };
 
-export default function CommentSection({ postId, initialComments }: CommentSectionProps) {
-  const [comments, setComments] = useState(initialComments);
-
+export default function CommentSection({ postId, comments, onCommentsChange }: CommentSectionProps) {
   const handleCommentSubmit = async () => {
     try {
       const timestamp = Date.now();
@@ -20,8 +19,8 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
         const errData = await res.json();
         throw new Error(errData.error || 'update comments failed');
       }
-      const newComments = await res.json();
-      setComments(newComments);
+      const newComments: PostComment[] = await res.json();
+      onCommentsChange?.(newComments);
     } catch (err) {
       console.error('update Failed:', err);
     }
@@ -31,7 +30,7 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
     <section className="bg-gray-50 rounded-xl p-6">
       <h2 className="text-2xl font-bold mb-6">Comment</h2>
       <SessionProvider>
-          <CommentForm postId={postId} onSubmit={handleCommentSubmit} />
+        <CommentForm postId={postId} onSubmit={handleCommentSubmit} />
       </SessionProvider>
       <CommentList comments={comments} />
     </section>

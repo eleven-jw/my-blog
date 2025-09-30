@@ -1,9 +1,9 @@
 'use client';
 import { sanitizeForRender } from '@/lib/sanitizeHtml';
-import { Comment } from '@prisma/client';
+import type { PostComment } from './types';
 
 type CommentItemProps = {
-  comment: Comment;
+  comment: PostComment;
 };
 
 export default function CommentItem({ comment }: CommentItemProps) {
@@ -32,5 +32,4 @@ export default function CommentItem({ comment }: CommentItemProps) {
     </div>
   );
 }
-
 

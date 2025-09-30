@@ -4,7 +4,7 @@ import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import PostContent from '@/app/ui/post/PostContent'
-import CommentSection from '@/app/ui/post/CommentSection'
+import type { PostComment } from '@/app/ui/post/types'
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -118,7 +118,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     },
   });
 
-  const formattedComments = comments.map(comment => ({
+  const formattedComments: PostComment[] = comments.map(comment => ({
     ...comment,
     authorName: comment.author?.name ?? 'Unknown Author',
   }));
@@ -140,8 +140,8 @@ export default async function Page({ params, searchParams }: PageProps) {
         initialLikeCount={likeCount}
         initialFavoriteCount={favoriteCount}
         isFavorited={isFavorited}
+        initialComments={formattedComments}
       />
-      <CommentSection postId={post.id} initialComments={formattedComments}></CommentSection>
     </div>
   )
 }

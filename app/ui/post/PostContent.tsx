@@ -5,6 +5,8 @@ import { HeartIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon as BookmarkOutlineIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
 import { sanitizeForRender } from '@/lib/sanitizeHtml'
+import CommentSection from './CommentSection'
+import type { PostComment } from './types'
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -33,6 +35,7 @@ type PostContentProps = {
   isLiked: boolean
   initialFavoriteCount: number
   isFavorited: boolean
+  initialComments: PostComment[]
 }
 
 type LikeResponse = {
@@ -48,11 +51,18 @@ type FavoriteResponse = {
   message?: string
 }
 
-export default function PageContent({ post, initialLikeCount, isLiked, initialFavoriteCount, isFavorited }: PostContentProps) {
+export default function PageContent({ post, initialLikeCount, isLiked, initialFavoriteCount, isFavorited, initialComments }: PostContentProps) {
   const [liked, setLiked] = useState<boolean>(isLiked)
   const [likeCount, setLikeCount] = useState<number>(initialLikeCount)
   const [favorited, setFavorited] = useState<boolean>(isFavorited)
   const [favoriteCount, setFavoriteCount] = useState<number>(initialFavoriteCount)
+  const [comments, setComments] = useState<PostComment[]>(initialComments)
+
+  const commentCount = comments.length
+
+  const handleCommentsChange = (nextComments: PostComment[]) => {
+    setComments(nextComments)
+  }
 
   const handleLike = async () => {
     try {
@@ -107,7 +117,7 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
             <span>Views:{post.views ?? 0}</span>
             <span>Likes:{likeCount ?? 0}</span>
             <span>Favorites:{favoriteCount ?? 0}</span>
-            <span>Comments:{post?._count?.comments ?? 0}</span>
+            <span>Comments:{commentCount ?? 0}</span>
             <span>
               Tags:
               {post?.tags?.length ? post.tags.map((tag) => tag.name).join('、') : 'No tags'}
@@ -148,6 +158,11 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
           </div>
         </footer>
       </div>
+      <CommentSection
+        postId={post.id}
+        comments={comments}
+        onCommentsChange={handleCommentsChange}
+      />
     </>
   )
 }

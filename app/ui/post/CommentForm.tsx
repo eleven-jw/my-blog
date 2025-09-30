@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 type CommentFormProps = {
   postId: string;
-  onSubmit: () => void; // 提交成功后的回调（如刷新评论列表）
+  onSubmit: () => Promise<void>; // 提交成功后的回调（如刷新评论列表）
 };
 
 export default function CommentForm({ postId, onSubmit}: CommentFormProps) {
@@ -30,7 +30,7 @@ export default function CommentForm({ postId, onSubmit}: CommentFormProps) {
         const errData = await res.json();
         throw new Error(errData.error || '提交失败');
       }
-      onSubmit();
+      await onSubmit();
       setFormData({content: '' });
     } catch (err) {
       setError(err.message || 'error提交失败');

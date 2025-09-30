@@ -1,10 +1,10 @@
 
 'use client';
-import { Comment } from '@prisma/client';
 import CommentItem from './CommentItem';
+import type { PostComment } from './types';
 
 type CommentListProps = {
-  comments: Comment[];
+  comments: PostComment[];
   isLoading?: boolean;
   error?: string | null;
 };
