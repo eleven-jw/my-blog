@@ -1,14 +1,14 @@
 export const PRESET_TAG_NAMES = [
-  '旅游',
-  '美食',
-  '健身',
-  '科技',
-  '教育',
-  '时尚',
-  '摄影',
-  '音乐',
-  '电影',
-  '阅读',
+  'Travel',
+  'Food',
+  'Gym',
+  'Tec',
+  'Education',
+  'Fashion',
+  'Photography',
+  'Music',
+  'Movie',
+  'Reading',
 ] as const
 
 export const MAX_TAGS_PER_POST = 5
