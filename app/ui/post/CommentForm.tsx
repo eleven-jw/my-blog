@@ -46,7 +46,7 @@ export default function CommentForm({ postId, onSubmit}: CommentFormProps) {
         value={formData.content}
         onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
         rows={4}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       <button

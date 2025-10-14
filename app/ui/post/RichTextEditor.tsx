@@ -81,7 +81,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
   return (
     <div className="space-y-2">
       <Toolbar editor={editor} />
-      <div className="relative min-h-[240px] rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm focus-within:border-primary">
+      <div className="relative min-h-[240px] rounded-md border-input bg-white px-3 py-2 text-sm shadow-sm focus-within:border-primary">
         {placeholder && editor.isEmpty && !editor.isFocused && (
           <span className="pointer-events-none select-none text-gray-400">{placeholder}</span>
         )}
@@ -152,7 +152,7 @@ function Toolbar({ editor }: ToolbarProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-input bg-gray-50 px-2 py-2">
+    <div className="flex flex-wrap items-center gap-2 rounded-md border-input bg-gray-50 px-2 py-2">
       <button type="button" className={buttonClasses(editor.isActive('bold'))} onClick={() => editor.chain().focus().toggleBold().run()}>
         加粗
       </button>

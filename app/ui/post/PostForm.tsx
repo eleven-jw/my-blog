@@ -229,7 +229,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
           </label>
           <select
             id="post-status"
-            className="h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-10 w-full rounded-md border-input bg-white px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             value={status}
             onChange={(event) => setStatus(event.target.value)}
           >

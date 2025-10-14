@@ -103,7 +103,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form side */}
-          <Card className="rounded-2xl shadow">
+          <Card className="rounded-2xl border border-gray-200 bg-white shadow-lg">
             <CardHeader>
               <CardTitle>Sign in</CardTitle>
               <CardDescription>Use your account credentials to log in.</CardDescription>

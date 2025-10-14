@@ -76,7 +76,7 @@ export default function Search({
           <label className="text-sm font-medium text-gray-700">作者</label>
           <select
             className={cn(
-              "h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              "h-10 w-full rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             )}
             value={filters.authorId}
             onChange={handleInputChange('authorId')}

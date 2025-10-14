@@ -14,18 +14,38 @@ export default function RegisterPage() {
           <form action={registerAction} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-              <input id="email" name="email" type="email" required className="mt-1 block w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400" />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-              <input id="password" name="password" type="password" required minLength={8} className="mt-1 block w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400" />
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={8}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
               <p className="text-xs text-gray-400 mt-1">At lease 8 charactars.</p>
             </div>
 
             <div>
               <label htmlFor="confirm" className="block text-sm font-medium text-gray-700">Confirm password</label>
-              <input id="confirm" name="confirm" type="password" required minLength={8} className="mt-1 block w-full rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400" />
+              <input
+                id="confirm"
+                name="confirm"
+                type="password"
+                required
+                minLength={8}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
             <div className="flex items-center justify-between">
