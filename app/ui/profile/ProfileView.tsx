@@ -14,7 +14,7 @@ export type ProfileViewProps = {
   profile: UserInfo & {
     email?: string | null
     followsCount?: number
-    starsCount?: number
+    favoritesCount?: number
     totalViews?: number
     role?: string | null
     interests?: string[]
@@ -193,7 +193,7 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
         <ProfileStat label="Posts" value={profile.postCount ?? 0} />
         <ProfileStat label="Fans" value={profile.fansCount ?? 0} />
         <ProfileStat label="Follows" value={profile.followsCount ?? 0} />
-        <ProfileStat label="Stars" value={profile.starsCount ?? 0} />
+        <ProfileStat label="Favorites" value={profile.favoritesCount ?? 0} />
         <ProfileStat label="Views" value={profile.totalViews ?? 0} />
       </div>
 

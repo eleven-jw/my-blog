@@ -10,13 +10,6 @@ import { UserInfo } from "@/types/use";
 import { StatItem } from "@/types/home";
 // import { useSession } from "next-auth/react";
 
-// TODO fetch data
-// const defaultItems: StatItem[] = [
-//   { label: 'Total Views', value: '23,569', change: '+37', changeVariant: 'up' },
-//   { label: 'Total Renenue', value: '¥ 0' },
-//   { label: 'Follows', value: 181 },
-//   { label: 'Stars', value: 352 },
-// ];
 
 type Article = {
   id: string;

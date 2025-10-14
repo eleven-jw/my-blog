@@ -23,10 +23,14 @@ export default async function ProfilePage() {
         fansCount: true,
         postCount: true,
         followsCount: true,
-        starsCount: true,
         totalViews: true,
         createdAt: true,
         interests: true,
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     }),
     prisma.post.count({ where: { authorId: session.user.id } }),
@@ -44,7 +48,12 @@ export default async function ProfilePage() {
     })
   }
 
-  const profile = { ...user, postCount }
+  const { _count, ...profileBase } = user
+  const profile = {
+    ...profileBase,
+    postCount,
+    favoritesCount: _count.favorites,
+  }
 
   return <ProfileView profile={profile} availableInterests={availableInterests} />
 }

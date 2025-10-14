@@ -19,7 +19,11 @@ export async function GET() {
       select: {
         totalViews: true,
         followsCount: true,
-        starsCount: true,
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     });
 
@@ -57,8 +61,8 @@ export async function GET() {
             changeVariant: yesterdayStat?.followsIncrement ? "up" : "down"
         },
         {
-            label: 'Stars',
-            value: user.starsCount,
+            label: 'Favorites',
+            value: user._count.favorites,
             change: yesterdayStat?.starsIncrement ? `+${yesterdayStat.starsIncrement}` : null,
             changeVariant: yesterdayStat?.starsIncrement ? "up" : "down"
         }

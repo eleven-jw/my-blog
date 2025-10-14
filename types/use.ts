@@ -6,7 +6,7 @@ export interface UserInfo {
   fansCount: number
   postCount: number
   followsCount?: number
-  starsCount?: number
+  favoritesCount?: number
   totalViews?: number
   createdAt?: string | Date
   interests?: string[]

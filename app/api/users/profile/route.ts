@@ -86,17 +86,26 @@ export async function PUT(request: Request) {
         fansCount: true,
         postCount: true,
         followsCount: true,
-        starsCount: true,
         totalViews: true,
         role: true,
         interests: true,
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     })
+
+    const { _count, ...userInfo } = updated
 
     return NextResponse.json({
       code: 200,
       message: 'success',
-      data: updated,
+      data: {
+        ...userInfo,
+        favoritesCount: _count.favorites,
+      },
     })
   } catch (error) {
     console.error('update profile failed', error)
