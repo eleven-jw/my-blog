@@ -116,6 +116,9 @@ export default async function Page({ params, searchParams }: PageProps) {
     include: {
       author: true
     },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
 
   const formattedComments: PostComment[] = comments.map(comment => ({
