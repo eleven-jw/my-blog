@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Blog
+
+My Blog is a multi-tenant blogging platform built with Next.js. It combines a modern collaborative editing experience, fine-grained organization-level access control, and social engagement features such as likes, favorites, and threaded comments.
+
+## Feature Highlights
+
+- **Multi-tenant roles** – Global administrators plus per-organization roles (Owner, Admin, Editor, Author, Contributor, Viewer) control who can publish or manage content.
+- **Rich content authoring** – TipTap-powered editor with images, code blocks, formatting, and sanitization.
+- **Engagement layer** – Readers can comment, like, and favorite posts; view counts are tracked per post and per author.
+- **Dynamic tagging** – Hybrid system of curated suggestions and custom tags with server-side validation.
+- **Dark-mode aware UI** – Theme toggling with color tokens and Tailwind-based styling.
+
+## Technology Stack
+
+| Layer | Technology |
+| --- | --- |
+| Web Framework | [Next.js 15](https://nextjs.org/) (App Router) |
+| UI | React 19, Tailwind CSS 4, shadcn/ui primitives, Heroicons, Lucide |
+| Editor | TipTap (with highlight.js, lowlight) |
+| Auth | NextAuth.js with Prisma adapter, Credentials + Google providers |
+| Data | Prisma ORM, PostgreSQL |
+| Validation & Utils | Zod, sanitize-html, node-cron |
+
+## System Architecture
+
+```mermaid
+graph TD
+    A[Browser] -->|SSR/CSR| B[Next.js App Router]
+    B -->|ORM Queries| C[(PostgreSQL)]
+    B -->|Authentication| D[NextAuth]
+    D -->|Prisma Adapter| C
+    B -->|Rich Text APIs| E[TipTap Extensions]
+    B -->|Background Jobs| F[node-cron Tasks]
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+- PostgreSQL instance (local Docker or managed)
+
+### Environment variables
+
+Create `.env.local` and provide at least:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DB_NAME"
+NEXTAUTH_SECRET="your-64-char-secret"
+GOOGLE_CLIENT_ID="optional-oauth"
+GOOGLE_CLIENT_SECRET="optional-oauth"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Update `.env.example` and re-seed Prisma when new secrets are introduced.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Install & run locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Install dependencies
+pnpm install
 
-## Learn More
+# Apply database schema and generate the Prisma client
+pnpm prisma migrate dev
 
-To learn more about Next.js, take a look at the following resources:
+# (Optional) seed demo accounts or content
+node scripts/create-user.js
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Start the dev server (http://localhost:3000)
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Useful scripts
 
-## Deploy on Vercel
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Run the Turbopack development server |
+| `pnpm build` | Produce a production bundle |
+| `pnpm start` | Serve the production build |
+| `pnpm lint` | Run ESLint with the Next.js core web vitals rules |
+| `pnpm prisma migrate dev` | Apply migrations and regenerate Prisma client |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+.
+├─ app/
+│  ├─ (content)/posts/              # Server components for post CRUD flows
+│  │  ├─ create/page.tsx            # Post creation compound form
+│  │  ├─ [id]/page.tsx              # Post detail (view, comments, access control)
+│  │  └─ [id]/edit/page.tsx         # Post editing entry point
+│  ├─ (content)/profile/            # Author profile dashboard
+│  ├─ api/                          # Route handlers (RESTful endpoints)
+│  │  ├─ posts/list/route.ts        # Post listing, creation, update, deletion
+│  │  ├─ posts/[id]/like/route.ts   # Like/unlike logic
+│  │  ├─ comments/route.ts          # Comment CRUD endpoints
+│  │  ├─ tags/route.ts              # Tag catalogue and creation
+│  │  └─ organizations/route.ts     # Organization membership queries
+│  ├─ lib/context/ThemeWrapper.tsx  # Next-themes provider
+│  └─ layout.tsx                    # Root layout (fonts, global providers)
+├─ components/ui/                   # Reusable UI primitives from shadcn/ui
+├─ lib/
+│  ├─ auth.ts                       # NextAuth configuration
+│  ├─ permissions.ts                # Role & permission helpers
+│  ├─ prisma.ts                     # Prisma client singleton
+│  ├─ sanitizeHtml.ts               # TipTap sanitization wrapper
+│  ├─ schedulePublisher.ts          # node-cron scheduled publisher
+│  └─ tagRules.ts                   # Tag constants & validation limits
+├─ prisma/
+│  ├─ schema.prisma                 # Data model (users, posts, orgs, tags, comments)
+│  └─ migrations/                   # Generated migration history
+├─ scripts/
+│  └─ create-user.js                # Utility to seed a demo user
+├─ types/
+│  ├─ post.ts                       # Shared post/tag type definitions
+│  ├─ organization.ts               # Organization membership contracts
+│  └─ user.ts                       # Cross-layer user interfaces
+├─ tailwind.config.ts               # Tailwind (v4) configuration
+└─ eslint.config.mjs                # Project linting rules
+```
+
+> The `app/ui/` subtree co-locates feature-specific client components (e.g., `PostContent`, `CommentSection`, `PostForm`) alongside their server routes.
+
+## Development Notes
+
+- Always run `pnpm prisma migrate dev` after changing `prisma/schema.prisma` and keep migrations committed.
+- Update `lib/permissions.ts` when introducing new role types or adjusting access policies.
+- Document manual QA steps for PRs until automated tests are introduced.
+
+## License
+
+This project is private; all rights reserved.
