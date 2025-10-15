@@ -77,7 +77,10 @@ pnpm dev
 | `pnpm dev` | Run the Turbopack development server |
 | `pnpm build` | Produce a production bundle |
 | `pnpm start` | Serve the production build |
-| `pnpm lint` | Run ESLint with the Next.js core web vitals rules |
+| `pnpm lint` | Run ESLint (Next.js core web vitals, zero warnings) |
+| `pnpm lint:fix` | Run ESLint with auto-fix enabled |
+| `pnpm format` | Check formatting with Prettier |
+| `pnpm format:write` | Apply Prettier formatting to the codebase |
 | `pnpm prisma migrate dev` | Apply migrations and regenerate Prisma client |
 
 ## Project Structure
