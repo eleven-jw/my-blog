@@ -1,22 +1,17 @@
-'use client'
+"use client"
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Search, {
-  type AuthorOption,
-  type PostFilterValues,
-} from "@/app/ui/post/Search"
-import PublicPostsTable, {
-  type PublicPostListItem,
-} from "@/app/ui/post/PublicPostsTable"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import Search, { type AuthorOption, type PostFilterValues } from "@/app/ui/post/Search"
+import PublicPostsTable, { type PublicPostListItem } from "@/app/ui/post/PublicPostsTable"
 import { Button } from "@/components/ui/button"
 import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 
 const defaultFilters: PostFilterValues = {
-  title: '',
-  startDate: '',
-  endDate: '',
-  authorId: 'all',
+  title: "",
+  startDate: "",
+  endDate: "",
+  authorId: "all",
 }
 
 const PAGE_SIZE = 10
@@ -50,21 +45,21 @@ export default function ExplorePage() {
 
   const fetchAuthors = useCallback(async () => {
     try {
-      const response = await fetch('/api/users/authors')
+      const response = await fetch("/api/users/authors")
       if (!response.ok) {
-        throw new Error('获取作者列表失败')
+        throw new Error("获取作者列表失败")
       }
 
       const payload = (await response.json()) as AuthorsResponse
       if (payload.code !== 200) {
-        throw new Error(payload.message || '获取作者列表失败')
+        throw new Error(payload.message || "获取作者列表失败")
       }
 
       const unique = new Map<string, AuthorOption>()
       payload.data.forEach((author) => {
         unique.set(author.id, {
           id: author.id,
-          name: author.name || '未命名作者',
+          name: author.name || "未命名作者",
         })
       })
 
@@ -75,55 +70,52 @@ export default function ExplorePage() {
     }
   }, [])
 
-  const fetchPosts = useCallback(
-    async (nextPage: number, activeFilters: PostFilterValues) => {
-      setLoading(true)
-      setErrorMessage(null)
+  const fetchPosts = useCallback(async (nextPage: number, activeFilters: PostFilterValues) => {
+    setLoading(true)
+    setErrorMessage(null)
 
-      try {
-        const params = new URLSearchParams({
-          scope: 'public',
-          page: String(nextPage),
-          size: String(PAGE_SIZE),
-        })
+    try {
+      const params = new URLSearchParams({
+        scope: "public",
+        page: String(nextPage),
+        size: String(PAGE_SIZE),
+      })
 
-        if (activeFilters.title) {
-          params.set('title', activeFilters.title)
-        }
-        if (activeFilters.startDate) {
-          params.set('startDate', activeFilters.startDate)
-        }
-        if (activeFilters.endDate) {
-          params.set('endDate', activeFilters.endDate)
-        }
-        if (activeFilters.authorId && activeFilters.authorId !== 'all') {
-          params.set('authorId', activeFilters.authorId)
-        }
-
-        const response = await fetch(`/api/posts/list?${params.toString()}`)
-        if (!response.ok) {
-          throw new Error('获取文章失败')
-        }
-
-        const payload = (await response.json()) as PublicPostsResponse
-        if (payload.code !== 200) {
-          throw new Error(payload.message || '获取文章失败')
-        }
-
-        setPosts(payload.data.list)
-        setPage(payload.data.page)
-        setTotal(payload.data.total)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : '获取文章失败'
-        setErrorMessage(message)
-        setPosts([])
-        setTotal(0)
-      } finally {
-        setLoading(false)
+      if (activeFilters.title) {
+        params.set("title", activeFilters.title)
       }
-    },
-    []
-  )
+      if (activeFilters.startDate) {
+        params.set("startDate", activeFilters.startDate)
+      }
+      if (activeFilters.endDate) {
+        params.set("endDate", activeFilters.endDate)
+      }
+      if (activeFilters.authorId && activeFilters.authorId !== "all") {
+        params.set("authorId", activeFilters.authorId)
+      }
+
+      const response = await fetch(`/api/posts/list?${params.toString()}`)
+      if (!response.ok) {
+        throw new Error("获取文章失败")
+      }
+
+      const payload = (await response.json()) as PublicPostsResponse
+      if (payload.code !== 200) {
+        throw new Error(payload.message || "获取文章失败")
+      }
+
+      setPosts(payload.data.list)
+      setPage(payload.data.page)
+      setTotal(payload.data.total)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "获取文章失败"
+      setErrorMessage(message)
+      setPosts([])
+      setTotal(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     fetchAuthors()
@@ -150,20 +142,17 @@ export default function ExplorePage() {
       if (nextPage > totalPages) return
       fetchPosts(nextPage, filters)
     },
-    [fetchPosts, filters, total]
+    [fetchPosts, filters, total],
   )
 
   const handleView = useCallback(
     (postId: string) => {
       router.push(`/posts/${postId}?from=explore`)
     },
-    [router]
+    [router],
   )
 
-  const pagination = useMemo(
-    () => ({ page, size: PAGE_SIZE, total }),
-    [page, total]
-  )
+  const pagination = useMemo(() => ({ page, size: PAGE_SIZE, total }), [page, total])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 

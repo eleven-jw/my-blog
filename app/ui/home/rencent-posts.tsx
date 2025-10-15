@@ -1,12 +1,7 @@
 "use client"
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card"
-import DataTable, {
-  type DataTableColumnDef,
-} from "@/app/ui/common/data-table"
+import { Card, CardContent } from "@/components/ui/card"
+import DataTable, { type DataTableColumnDef } from "@/app/ui/common/data-table"
 
 type OnRowClick<TData> = (row: TData) => void
 

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server"
 import { getInterestTags } from "@/app/lib/interests"
 
 export async function GET() {
@@ -6,13 +6,13 @@ export async function GET() {
   return NextResponse.json(
     {
       code: 200,
-      message: 'success',
+      message: "success",
       data: tags,
     },
     {
       headers: {
-        'Cache-Control': 'public, max-age=600, s-maxage=600, stale-while-revalidate=300',
+        "Cache-Control": "public, max-age=600, s-maxage=600, stale-while-revalidate=300",
       },
-    }
+    },
   )
 }

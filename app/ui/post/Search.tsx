@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { useCallback } from 'react'
+import { useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -39,7 +39,7 @@ export default function Search({
       (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         onFilterChange({ [key]: event.target.value })
       },
-    [onFilterChange]
+    [onFilterChange],
   )
 
   return (
@@ -51,7 +51,7 @@ export default function Search({
             type="text"
             placeholder="请输入文章标题"
             value={filters.title}
-            onChange={handleInputChange('title')}
+            onChange={handleInputChange("title")}
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -59,7 +59,7 @@ export default function Search({
           <Input
             type="date"
             value={filters.startDate}
-            onChange={handleInputChange('startDate')}
+            onChange={handleInputChange("startDate")}
             max={filters.endDate || undefined}
           />
         </div>
@@ -68,7 +68,7 @@ export default function Search({
           <Input
             type="date"
             value={filters.endDate}
-            onChange={handleInputChange('endDate')}
+            onChange={handleInputChange("endDate")}
             min={filters.startDate || undefined}
           />
         </div>
@@ -76,10 +76,10 @@ export default function Search({
           <label className="text-sm font-medium text-gray-700">作者</label>
           <select
             className={cn(
-              "h-10 w-full rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              "h-10 w-full rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             )}
             value={filters.authorId}
-            onChange={handleInputChange('authorId')}
+            onChange={handleInputChange("authorId")}
           >
             <option value="all">全部作者</option>
             {authors.map((author) => (
@@ -94,12 +94,7 @@ export default function Search({
         <Button onClick={onSearch} disabled={isSubmitting}>
           查询
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onReset}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={onReset} disabled={isSubmitting}>
           重置
         </Button>
       </div>

@@ -1,16 +1,12 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { prisma } from '@/lib/prisma'
-import type { Prisma, Role } from '@prisma/client'
-import { sanitizeForRender } from '@/lib/sanitizeHtml'
-import {
-  MAX_TAGS_PER_POST,
-  TAG_NAME_MAX_LENGTH,
-  TAG_NAME_MIN_LENGTH,
-} from '@/lib/tagRules'
+import { prisma } from "@/lib/prisma"
+import type { Prisma, Role } from "@prisma/client"
+import { sanitizeForRender } from "@/lib/sanitizeHtml"
+import { MAX_TAGS_PER_POST, TAG_NAME_MAX_LENGTH, TAG_NAME_MIN_LENGTH } from "@/lib/tagRules"
 
-const allowedStatuses = new Set(['draft', 'published', 'scheduled'])
+const allowedStatuses = new Set(["draft", "published", "scheduled"])
 
 const postListSelect = {
   id: true,
@@ -104,7 +100,7 @@ type PostDetailData = {
 
 export async function GET(request: Request) {
   const searchParams = new URL(request.url).searchParams
-  const scope = searchParams.get('scope')
+  const scope = searchParams.get("scope")
   const session = await getServerSession(authOptions)
 
   let role: Role | null = null
@@ -112,83 +108,65 @@ export async function GET(request: Request) {
   if (session?.user?.id) {
     role = await getCurrentUserRole(session.user.id)
     if (!role) {
-      return NextResponse.json(
-        { code: 403, message: 'Account not found' },
-        { status: 403 }
-      )
+      return NextResponse.json({ code: 403, message: "Account not found" }, { status: 403 })
     }
-  } else if (scope === 'public') {
-    role = 'USER'
+  } else if (scope === "public") {
+    role = "USER"
   } else {
-    return NextResponse.json(
-      { code: 401, message: 'Please login' },
-      { status: 401 }
-    )
+    return NextResponse.json({ code: 401, message: "Please login" }, { status: 401 })
   }
 
-  const postId = searchParams.get('id')
+  const postId = searchParams.get("id")
 
   if (postId) {
     if (!session?.user?.id || !role) {
-      return NextResponse.json(
-        { code: 401, message: 'Please login' },
-        { status: 401 }
-      )
+      return NextResponse.json({ code: 401, message: "Please login" }, { status: 401 })
     }
     return getArticleDetail(postId, session.user.id, role)
   }
 
-  const resolvedRole: Role = role ?? 'USER'
+  const resolvedRole: Role = role ?? "USER"
 
-  return getArticleList(request, session?.user?.id ?? '', resolvedRole)
+  return getArticleList(request, session?.user?.id ?? "", resolvedRole)
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { code: 401, message: 'Please login' },
-      { status: 401 }
-    )
+    return NextResponse.json({ code: 401, message: "Please login" }, { status: 401 })
   }
 
   try {
     const body = await request.json()
-    const title = typeof body?.title === 'string' ? body.title.trim() : ''
-    const content = typeof body?.content === 'string' ? body.content : ''
+    const title = typeof body?.title === "string" ? body.title.trim() : ""
+    const content = typeof body?.content === "string" ? body.content : ""
     const status = normalizeStatus(body?.status)
-    const plainText = content.replace(/<[^>]*>/g, '').trim()
-    
+    const plainText = content.replace(/<[^>]*>/g, "").trim()
+
     const tagResult = normalizeTagNames(body?.tags)
     if (!tagResult.success) {
-      return NextResponse.json(
-        { code: 422, message: tagResult.message },
-        { status: 422 }
-      )
+      return NextResponse.json({ code: 422, message: tagResult.message }, { status: 422 })
     }
 
     const tags = tagResult.tags
 
-     if (status === 'scheduled') {
-      const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null;
+    if (status === "scheduled") {
+      const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null
       if (!publishedAt) {
-        return NextResponse.json(
-          { code: 422, message: 'need set publish time' },
-          { status: 422 }
-        );
+        return NextResponse.json({ code: 422, message: "need set publish time" }, { status: 422 })
       }
       if (publishedAt <= new Date()) {
         return NextResponse.json(
-          { code: 422, message: 'publish time should later than now' },
-          { status: 422 }
-        );
+          { code: 422, message: "publish time should later than now" },
+          { status: 422 },
+        )
       }
     }
 
     if (!title || !plainText) {
       return NextResponse.json(
-        { code: 422, message: 'Title and content are required' },
-        { status: 422 }
+        { code: 422, message: "Title and content are required" },
+        { status: 422 },
       )
     }
 
@@ -204,7 +182,7 @@ export async function POST(request: Request) {
           status,
           slug,
           authorId: session.user.id,
-          publishedAt: status === 'scheduled' ? new Date(body.publishedAt) : undefined,
+          publishedAt: status === "scheduled" ? new Date(body.publishedAt) : undefined,
           ...(tags.length
             ? {
                 tags: {
@@ -215,7 +193,6 @@ export async function POST(request: Request) {
                 },
               }
             : {}),
-
         },
         select: postDetailSelect,
       })
@@ -236,44 +213,32 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       code: 200,
-      message: 'success',
+      message: "success",
       data: toPostDetail(created),
     })
   } catch (error) {
-    console.error('create post failed', error)
-    return NextResponse.json(
-      { code: 500, message: 'Server error' },
-      { status: 500 }
-    )
+    console.error("create post failed", error)
+    return NextResponse.json({ code: 500, message: "Server error" }, { status: 500 })
   }
 }
 
 export async function PUT(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { code: 401, message: 'Please login' },
-      { status: 401 }
-    )
+    return NextResponse.json({ code: 401, message: "Please login" }, { status: 401 })
   }
 
   const role = await getCurrentUserRole(session.user.id)
   if (!role) {
-    return NextResponse.json(
-      { code: 403, message: 'Account not found' },
-      { status: 403 }
-    )
+    return NextResponse.json({ code: 403, message: "Account not found" }, { status: 403 })
   }
 
   try {
     const body = await request.json()
-    const postId = typeof body?.id === 'string' ? body.id : ''
+    const postId = typeof body?.id === "string" ? body.id : ""
 
     if (!postId) {
-      return NextResponse.json(
-        { code: 422, message: 'Missing post id' },
-        { status: 422 }
-      )
+      return NextResponse.json({ code: 422, message: "Missing post id" }, { status: 422 })
     }
 
     const post = await prisma.post.findUnique({
@@ -288,48 +253,45 @@ export async function PUT(request: Request) {
     })
 
     if (!post) {
-      return NextResponse.json(
-        { code: 404, message: 'Post not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ code: 404, message: "Post not found" }, { status: 404 })
     }
 
-    if (role !== 'ADMIN' && post.authorId !== session.user.id) {
+    if (role !== "ADMIN" && post.authorId !== session.user.id) {
       return NextResponse.json(
-        { code: 403, message: 'No permission to update this post' },
-        { status: 403 }
+        { code: 403, message: "No permission to update this post" },
+        { status: 403 },
       )
     }
 
     const data: Prisma.PostUpdateInput = {}
 
     if (body?.status !== undefined) {
-      const newStatus = normalizeStatus(body.status);
-      data.status = newStatus;
+      const newStatus = normalizeStatus(body.status)
+      data.status = newStatus
 
-      if (newStatus === 'scheduled') {
-        const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null;
+      if (newStatus === "scheduled") {
+        const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : null
         if (!publishedAt) {
           return NextResponse.json(
-            { code: 422, message: 'need to set publish time' },
-            { status: 422 }
-          );
+            { code: 422, message: "need to set publish time" },
+            { status: 422 },
+          )
         }
         if (publishedAt <= new Date()) {
           return NextResponse.json(
-            { code: 422, message: 'pulish time should later than now' },
-            { status: 422 }
-          );
+            { code: 422, message: "pulish time should later than now" },
+            { status: 422 },
+          )
         }
-        data.publishedAt = publishedAt;
+        data.publishedAt = publishedAt
       } else {
-        if (post.status === 'scheduled' && newStatus !== 'scheduled') {
-          data.publishedAt = new Date();
+        if (post.status === "scheduled" && newStatus !== "scheduled") {
+          data.publishedAt = new Date()
         }
       }
     }
 
-    if (typeof body?.title === 'string' && body.title.trim()) {
+    if (typeof body?.title === "string" && body.title.trim()) {
       const nextTitle = body.title.trim()
       data.title = nextTitle
       if (nextTitle !== post.title) {
@@ -337,14 +299,11 @@ export async function PUT(request: Request) {
       }
     }
 
-    if (typeof body?.content === 'string') {
+    if (typeof body?.content === "string") {
       const htmlContent = body.content
-      const plainText = htmlContent.replace(/<[^>]*>/g, '').trim()
+      const plainText = htmlContent.replace(/<[^>]*>/g, "").trim()
       if (!plainText) {
-        return NextResponse.json(
-          { code: 422, message: '正文不能为空' },
-          { status: 422 }
-        )
+        return NextResponse.json({ code: 422, message: "正文不能为空" }, { status: 422 })
       }
       data.content = sanitizeForRender(htmlContent)
     }
@@ -356,10 +315,7 @@ export async function PUT(request: Request) {
     if (body?.tags !== undefined) {
       const tagResult = normalizeTagNames(body.tags)
       if (!tagResult.success) {
-        return NextResponse.json(
-          { code: 422, message: tagResult.message },
-          { status: 422 }
-        )
+        return NextResponse.json({ code: 422, message: tagResult.message }, { status: 422 })
       }
 
       const normalizedTags = tagResult.tags
@@ -376,8 +332,8 @@ export async function PUT(request: Request) {
 
     if (!Object.keys(data).length) {
       return NextResponse.json(
-        { code: 422, message: 'No updatable fields supplied' },
-        { status: 422 }
+        { code: 422, message: "No updatable fields supplied" },
+        { status: 422 },
       )
     }
 
@@ -389,33 +345,24 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({
       code: 200,
-      message: 'success',
+      message: "success",
       data: toPostDetail(updated),
     })
   } catch (error) {
-    console.error('update post failed', error)
-    return NextResponse.json(
-      { code: 500, message: 'Server error' },
-      { status: 500 }
-    )
+    console.error("update post failed", error)
+    return NextResponse.json({ code: 500, message: "Server error" }, { status: 500 })
   }
 }
 
 export async function DELETE(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { code: 401, message: 'Please login' },
-      { status: 401 }
-    )
+    return NextResponse.json({ code: 401, message: "Please login" }, { status: 401 })
   }
 
   const role = await getCurrentUserRole(session.user.id)
   if (!role) {
-    return NextResponse.json(
-      { code: 403, message: 'Account not found' },
-      { status: 403 }
-    )
+    return NextResponse.json({ code: 403, message: "Account not found" }, { status: 403 })
   }
 
   try {
@@ -423,10 +370,7 @@ export async function DELETE(request: Request) {
     const postId = body?.id as string | undefined
 
     if (!postId) {
-      return NextResponse.json(
-        { code: 422, message: 'Missing post id' },
-        { status: 422 }
-      )
+      return NextResponse.json({ code: 422, message: "Missing post id" }, { status: 422 })
     }
 
     const post = await prisma.post.findUnique({
@@ -435,16 +379,13 @@ export async function DELETE(request: Request) {
     })
 
     if (!post) {
-      return NextResponse.json(
-        { code: 404, message: 'Post not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ code: 404, message: "Post not found" }, { status: 404 })
     }
 
-    if (role !== 'ADMIN' && post.authorId !== session.user.id) {
+    if (role !== "ADMIN" && post.authorId !== session.user.id) {
       return NextResponse.json(
-        { code: 403, message: 'No permission to delete this post' },
-        { status: 403 }
+        { code: 403, message: "No permission to delete this post" },
+        { status: 403 },
       )
     }
 
@@ -463,59 +404,52 @@ export async function DELETE(request: Request) {
       })
     })
 
-    return NextResponse.json({ code: 200, message: 'success' })
+    return NextResponse.json({ code: 200, message: "success" })
   } catch (error) {
-    console.error('delete post failed', error)
-    return NextResponse.json(
-      { code: 500, message: 'Server error' },
-      { status: 500 }
-    )
+    console.error("delete post failed", error)
+    return NextResponse.json({ code: 500, message: "Server error" }, { status: 500 })
   }
 }
 
-async function getArticleList(
-  request: Request,
-  userId: string,
-  role: Role
-) {
+async function getArticleList(request: Request, userId: string, role: Role) {
   try {
     const searchParams = new URL(request.url).searchParams
-    const pageParam = parseInt(searchParams.get('page') || '1', 10)
-    const sizeParam = parseInt(searchParams.get('size') || '10', 10)
+    const pageParam = parseInt(searchParams.get("page") || "1", 10)
+    const sizeParam = parseInt(searchParams.get("size") || "10", 10)
     const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam
     const size = Number.isNaN(sizeParam) || sizeParam < 1 ? 10 : sizeParam
-    const sortBy = searchParams.get('sortBy') || 'createdAt'
-    const sortOrderParam = searchParams.get('sortOrder')
-    const sortOrder = sortOrderParam === 'asc' ? 'asc' : 'desc'
-    const title = searchParams.get('title')?.trim()
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const authorIdParam = searchParams.get('authorId')
-    const scope = searchParams.get('scope')
-    const statusFilter = searchParams.get('status')
+    const sortBy = searchParams.get("sortBy") || "createdAt"
+    const sortOrderParam = searchParams.get("sortOrder")
+    const sortOrder = sortOrderParam === "asc" ? "asc" : "desc"
+    const title = searchParams.get("title")?.trim()
+    const startDate = searchParams.get("startDate")
+    const endDate = searchParams.get("endDate")
+    const authorIdParam = searchParams.get("authorId")
+    const scope = searchParams.get("scope")
+    const statusFilter = searchParams.get("status")
 
     const startBoundary = startDate ? new Date(startDate) : undefined
     const endBoundary = endDate ? new Date(endDate) : undefined
 
     const where: Prisma.PostWhereInput = {}
 
-    const isPublicScope = scope === 'public'
+    const isPublicScope = scope === "public"
 
     if (isPublicScope) {
-      where.status = 'published'
-      if (authorIdParam && authorIdParam !== 'all') {
+      where.status = "published"
+      if (authorIdParam && authorIdParam !== "all") {
         where.authorId = authorIdParam
       }
     } else {
-      if (authorIdParam && authorIdParam !== 'all') {
-        if (role !== 'ADMIN' && authorIdParam !== userId) {
+      if (authorIdParam && authorIdParam !== "all") {
+        if (role !== "ADMIN" && authorIdParam !== userId) {
           return NextResponse.json(
-            { code: 403, message: 'No permission to view this author posts' },
-            { status: 403 }
+            { code: 403, message: "No permission to view this author posts" },
+            { status: 403 },
           )
         }
         where.authorId = authorIdParam
-      } else if (role !== 'ADMIN') {
+      } else if (role !== "ADMIN") {
         where.authorId = userId
       }
 
@@ -525,7 +459,7 @@ async function getArticleList(
     }
 
     if (title) {
-      where.title = { contains: title, mode: 'insensitive' }
+      where.title = { contains: title, mode: "insensitive" }
     }
 
     if (startBoundary && !Number.isNaN(startBoundary.getTime())) {
@@ -539,9 +473,7 @@ async function getArticleList(
     }
 
     const orderBy: Prisma.PostOrderByWithRelationInput =
-      sortBy === 'title'
-        ? { title: sortOrder }
-        : { createdAt: sortOrder }
+      sortBy === "title" ? { title: sortOrder } : { createdAt: sortOrder }
 
     const [posts, total] = await Promise.all([
       prisma.post.findMany({
@@ -558,7 +490,7 @@ async function getArticleList(
 
     return NextResponse.json({
       code: 200,
-      message: 'success',
+      message: "success",
       data: {
         list,
         page,
@@ -567,19 +499,12 @@ async function getArticleList(
       },
     })
   } catch (error) {
-    console.error('fetch posts failed', error)
-    return NextResponse.json(
-      { code: 500, message: 'Server error' },
-      { status: 500 }
-    )
+    console.error("fetch posts failed", error)
+    return NextResponse.json({ code: 500, message: "Server error" }, { status: 500 })
   }
 }
 
-async function getArticleDetail(
-  postId: string,
-  userId: string,
-  role: Role
-) {
+async function getArticleDetail(postId: string, userId: string, role: Role) {
   try {
     const post = await prisma.post.findUnique({
       where: { id: postId },
@@ -587,30 +512,24 @@ async function getArticleDetail(
     })
 
     if (!post) {
-      return NextResponse.json(
-        { code: 404, message: 'Post not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ code: 404, message: "Post not found" }, { status: 404 })
     }
 
-    if (role !== 'ADMIN' && post.authorId !== userId) {
+    if (role !== "ADMIN" && post.authorId !== userId) {
       return NextResponse.json(
-        { code: 403, message: 'No permission to view this post' },
-        { status: 403 }
+        { code: 403, message: "No permission to view this post" },
+        { status: 403 },
       )
     }
 
     return NextResponse.json({
       code: 200,
-      message: 'success',
+      message: "success",
       data: toPostDetail(post),
     })
   } catch (error) {
-    console.error('fetch post detail failed', error)
-    return NextResponse.json(
-      { code: 500, message: 'Server error' },
-      { status: 500 }
-    )
+    console.error("fetch post detail failed", error)
+    return NextResponse.json({ code: 500, message: "Server error" }, { status: 500 })
   }
 }
 
@@ -627,7 +546,7 @@ function toPostListItem(post: PostListQueryResult): PostListItem {
   return {
     id: post.id,
     title: post.title,
-    status: post.status ?? 'draft',
+    status: post.status ?? "draft",
     likes: post._count.likes ?? 0,
     views: post.views ?? 0,
     createdAt: post.createdAt.toISOString(),
@@ -645,7 +564,7 @@ function toPostDetail(post: PostDetailQueryResult): PostDetailData {
     id: post.id,
     title: post.title,
     content: post.content,
-    status: post.status ?? 'draft',
+    status: post.status ?? "draft",
     likes: post._count.likes ?? 0,
     views: post.views ?? 0,
     tags: post.tags ?? [],
@@ -660,12 +579,12 @@ function toPostDetail(post: PostDetailQueryResult): PostDetailData {
 }
 
 function normalizeStatus(status: unknown): string {
-  if (typeof status !== 'string') {
-    return 'draft'
+  if (typeof status !== "string") {
+    return "draft"
   }
 
   const normalized = status.toLowerCase()
-  return allowedStatuses.has(normalized) ? normalized : 'draft'
+  return allowedStatuses.has(normalized) ? normalized : "draft"
 }
 
 type NormalizeTagsSuccess = { success: true; tags: string[] }
@@ -678,14 +597,14 @@ function normalizeTagNames(input: unknown): NormalizeTagsResult {
   }
 
   if (!Array.isArray(input)) {
-    return { success: false, message: '标签格式不正确' }
+    return { success: false, message: "标签格式不正确" }
   }
 
   const cleaned: string[] = []
   const seen = new Set<string>()
 
   for (const raw of input) {
-    if (typeof raw !== 'string') {
+    if (typeof raw !== "string") {
       continue
     }
 
@@ -695,7 +614,7 @@ function normalizeTagNames(input: unknown): NormalizeTagsResult {
     }
 
     if (sanitized.length < TAG_NAME_MIN_LENGTH) {
-      return { success: false, message: 'tag is too short' }
+      return { success: false, message: "tag is too short" }
     }
 
     if (sanitized.length > TAG_NAME_MAX_LENGTH) {
@@ -724,14 +643,14 @@ function normalizeTagNames(input: unknown): NormalizeTagsResult {
 
 function sanitizePlainTag(value: string): string {
   const sanitized = sanitizeForRender(value)
-  return sanitized.replace(/\s+/g, ' ').trim()
+  return sanitized.replace(/\s+/g, " ").trim()
 }
 
 function createSlugFragment(title: string): string {
   const fragment = title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
 
   return fragment.slice(0, 48)
 }
@@ -743,9 +662,7 @@ async function generateUniqueSlug(title: string, excludeId?: string): Promise<st
 
   while (true) {
     const existing = await prisma.post.findFirst({
-      where: excludeId
-        ? { slug: attempt, NOT: { id: excludeId } }
-        : { slug: attempt },
+      where: excludeId ? { slug: attempt, NOT: { id: excludeId } } : { slug: attempt },
       select: { id: true },
     })
 

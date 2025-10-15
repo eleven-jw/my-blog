@@ -63,14 +63,8 @@ export default function PageContent({
     () => post.tags?.map((tag) => tag.name).filter(Boolean) ?? [],
     [post.tags],
   )
-  const createdAtText = useMemo(
-    () => formatDateTime(post.createdAt) || "--",
-    [post.createdAt],
-  )
-  const updatedAtText = useMemo(
-    () => formatDateTime(post.updatedAt) || "--",
-    [post.updatedAt],
-  )
+  const createdAtText = useMemo(() => formatDateTime(post.createdAt) || "--", [post.createdAt])
+  const updatedAtText = useMemo(() => formatDateTime(post.updatedAt) || "--", [post.updatedAt])
   const sanitizedContent = useMemo(
     () => sanitizeForRender(post.content || emptyContentFallback),
     [post.content],
@@ -83,7 +77,7 @@ export default function PageContent({
   const handleLike = useCallback(async () => {
     try {
       const result = await fetch(`/api/posts/${post.id}/like`, {
-        method: 'POST',
+        method: "POST",
       })
 
       if (result.ok) {
@@ -92,17 +86,17 @@ export default function PageContent({
         setLikeCount(data.likeCount)
       } else {
         const data: LikeResponse | undefined = await result.json().catch(() => undefined)
-        console.error('failed to like:', data?.message ?? result.statusText)
+        console.error("failed to like:", data?.message ?? result.statusText)
       }
     } catch (error) {
-      console.error('failed to like:', error)
+      console.error("failed to like:", error)
     }
   }, [post.id])
 
   const handleFavorite = useCallback(async () => {
     try {
       const result = await fetch(`/api/posts/${post.id}/favorite`, {
-        method: 'POST',
+        method: "POST",
       })
 
       if (result.ok) {
@@ -111,10 +105,10 @@ export default function PageContent({
         setFavoriteCount(data.favoriteCount)
       } else {
         const data: FavoriteResponse | undefined = await result.json().catch(() => undefined)
-        console.error('failed to favorite:', data?.message ?? result.statusText)
+        console.error("failed to favorite:", data?.message ?? result.statusText)
       }
     } catch (error) {
-      console.error('failed to favorite:', error)
+      console.error("failed to favorite:", error)
     }
   }, [post.id])
 
@@ -124,7 +118,7 @@ export default function PageContent({
         <h1 className="text-3xl font-semibold text-gray-900">{post.title}</h1>
         <div className="space-y-2 rounded-md bg-gray-50 p-4 text-sm text-gray-600">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span>autho:{post.author?.name ?? 'Unknown Author'}</span>
+            <span>autho:{post.author?.name ?? "Unknown Author"}</span>
             <span>status:{post.status}</span>
             <span>createdAt:{createdAtText}</span>
             <span>updatedAt:{updatedAtText}</span>
@@ -134,10 +128,7 @@ export default function PageContent({
             <span>Likes:{likeCount ?? 0}</span>
             <span>Favorites:{favoriteCount ?? 0}</span>
             <span>Comments:{commentCount ?? 0}</span>
-            <span>
-              Tags:{' '}
-              {tagNames.length ? tagNames.join('、') : 'no tags'}
-            </span>
+            <span>Tags: {tagNames.length ? tagNames.join("、") : "no tags"}</span>
           </div>
         </div>
       </div>
@@ -152,18 +143,18 @@ export default function PageContent({
           <div className="flex space-x-4">
             <button
               onClick={handleLike}
-              className={`flex items-center space-x-1 ${liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+              className={`flex items-center space-x-1 ${liked ? "text-red-500" : "text-gray-500 hover:text-red-500"}`}
               aria-pressed={liked}
-              aria-label={liked ? '取消点赞' : '点赞文章'}
+              aria-label={liked ? "取消点赞" : "点赞文章"}
             >
-              <HeartIcon className={`h-5 w-5 ${liked ? 'fill-current' : ''}`} />
+              <HeartIcon className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
             </button>
 
             <button
               onClick={handleFavorite}
-              className={`flex items-center space-x-1 ${favorited ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500'}`}
+              className={`flex items-center space-x-1 ${favorited ? "text-yellow-500" : "text-gray-500 hover:text-yellow-500"}`}
               aria-pressed={favorited}
-              aria-label={favorited ? '取消收藏' : '收藏文章'}
+              aria-label={favorited ? "取消收藏" : "收藏文章"}
             >
               {favorited ? (
                 <BookmarkSolidIcon className="h-5 w-5" />

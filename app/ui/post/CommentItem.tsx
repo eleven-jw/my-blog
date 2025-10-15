@@ -1,24 +1,24 @@
-'use client';
-import { sanitizeForRender } from '@/lib/sanitizeHtml';
-import { formatRelativeTime } from '@/lib/utils';
-import type { PostComment } from './types'
+"use client"
+import { sanitizeForRender } from "@/lib/sanitizeHtml"
+import { formatRelativeTime } from "@/lib/utils"
+import type { PostComment } from "./types"
 
 type CommentItemProps = {
   comment: PostComment
 }
 
 const formatDate = (value: Date) =>
-  new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(value)
 
 export default function CommentItem({ comment }: CommentItemProps) {
   const createdAt = new Date(comment.createdAt)
-  const initial = comment.authorName?.trim()?.charAt(0)?.toUpperCase() || '友'
+  const initial = comment.authorName?.trim()?.charAt(0)?.toUpperCase() || "友"
 
   return (
     <article className="rounded-xl border border-gray-100 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -36,9 +36,7 @@ export default function CommentItem({ comment }: CommentItemProps) {
           <div
             className="prose prose-sm max-w-none text-gray-700"
             dangerouslySetInnerHTML={{
-              __html: sanitizeForRender(
-                comment.content || '<p class="text-gray-400">暂无内容</p>',
-              ),
+              __html: sanitizeForRender(comment.content || '<p class="text-gray-400">暂无内容</p>'),
             }}
           />
         </div>

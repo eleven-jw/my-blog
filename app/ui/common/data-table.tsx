@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import * as React from 'react'
+import * as React from "react"
 import {
   Table,
   TableBody,
@@ -17,7 +17,7 @@ import {
   type Cell,
   type ColumnDef,
   type Row,
-} from '@tanstack/react-table'
+} from "@tanstack/react-table"
 
 export type DataTableColumnMeta = {
   headerClassName?: string
@@ -29,9 +29,7 @@ export type DataTableColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
 }
 
 type RowClassName<TData> = string | ((row: Row<TData>) => string | undefined)
-type CellClassName<TData, TValue> =
-  | string
-  | ((cell: Cell<TData, TValue>) => string | undefined)
+type CellClassName<TData, TValue> = string | ((cell: Cell<TData, TValue>) => string | undefined)
 
 type DataTableProps<TData, TValue> = {
   columns: DataTableColumnDef<TData, TValue>[]
@@ -47,7 +45,7 @@ type DataTableProps<TData, TValue> = {
   getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string
 }
 
-const defaultEmptyState = '暂无数据'
+const defaultEmptyState = "暂无数据"
 
 export default function DataTable<TData, TValue>({
   columns,
@@ -81,10 +79,7 @@ export default function DataTable<TData, TValue>({
             {headerGroup.headers.map((header) => {
               const meta = header.column.columnDef.meta as DataTableColumnMeta | undefined
               return (
-                <TableHead
-                  key={header.id}
-                  className={cn(headerClassName, meta?.headerClassName)}
-                >
+                <TableHead key={header.id} className={cn(headerClassName, meta?.headerClassName)}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -97,7 +92,10 @@ export default function DataTable<TData, TValue>({
       <TableBody className={bodyClassName}>
         {loading ? (
           <TableRow>
-            <TableCell colSpan={visibleColumnsCount} className="py-8 text-center text-sm text-gray-500">
+            <TableCell
+              colSpan={visibleColumnsCount}
+              className="py-8 text-center text-sm text-gray-500"
+            >
               加载中...
             </TableCell>
           </TableRow>
@@ -105,10 +103,10 @@ export default function DataTable<TData, TValue>({
           rows.map((row) => (
             <TableRow
               key={row.id}
-              data-state={row.getIsSelected() && 'selected'}
+              data-state={row.getIsSelected() && "selected"}
               className={cn(
-                typeof rowClassName === 'function' ? rowClassName(row) : rowClassName,
-                onRowClick && 'cursor-pointer'
+                typeof rowClassName === "function" ? rowClassName(row) : rowClassName,
+                onRowClick && "cursor-pointer",
               )}
               onClick={onRowClick ? () => onRowClick(row.original, row) : undefined}
             >
@@ -116,8 +114,8 @@ export default function DataTable<TData, TValue>({
                 <TableCell
                   key={cell.id}
                   className={cn(
-                    typeof cellClassName === 'function' ? cellClassName(cell) : cellClassName,
-                    (cell.column.columnDef.meta as DataTableColumnMeta | undefined)?.cellClassName
+                    typeof cellClassName === "function" ? cellClassName(cell) : cellClassName,
+                    (cell.column.columnDef.meta as DataTableColumnMeta | undefined)?.cellClassName,
                   )}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -127,7 +125,10 @@ export default function DataTable<TData, TValue>({
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={visibleColumnsCount} className="py-8 text-center text-sm text-gray-500">
+            <TableCell
+              colSpan={visibleColumnsCount}
+              className="py-8 text-center text-sm text-gray-500"
+            >
               {emptyState}
             </TableCell>
           </TableRow>

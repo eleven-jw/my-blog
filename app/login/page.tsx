@@ -1,67 +1,67 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Link from 'next/link';
+import React, { useState } from "react"
+import { signIn } from "next-auth/react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function LoginPage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [remember, setRemember] = useState(false); // 记住我状态
-    const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [remember, setRemember] = useState(false) // 记住我状态
+  const [error, setError] = useState<string | null>(null)
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
 
-        const data = new FormData(e.currentTarget);
-        const email = (data.get("email") as string) ?? "";
-        const password = (data.get("password") as string) ?? "";
+    const data = new FormData(e.currentTarget)
+    const email = (data.get("email") as string) ?? ""
+    const password = (data.get("password") as string) ?? ""
 
-        // usr next-auth signIn with credentials
-        const res = await signIn("credentials", {
-            redirect: false,
-            remember,
-            email,
-            password,
-        });
+    // usr next-auth signIn with credentials
+    const res = await signIn("credentials", {
+      redirect: false,
+      remember,
+      email,
+      password,
+    })
 
-        setLoading(false);
+    setLoading(false)
 
-        if (!res) {
-            setError("Login fail");
-            return;
-        }
+    if (!res) {
+      setError("Login fail")
+      return
+    }
 
-        if (res.error) {
-            console.log('res.error', res.error); // error from autorize
-            setError(res.error || "invalidate username or password");
-            return;
-        }
+    if (res.error) {
+      console.log("res.error", res.error) // error from autorize
+      setError(res.error || "invalidate username or password")
+      return
+    }
 
-        router.push("/");
+    router.push("/")
   }
 
-    async function handleSocialSignIn(provider: "google" | "github") {
-        setLoading(true);
-        setError(null);
-        try {
-            // redirect: true make NextAuth redirect to  provider
-            await signIn(provider, { callbackUrl: "/" });
-        } catch (err) {
-            console.error(err);
-            setError("login fail, try again");
-            setLoading(false);
-        }
+  async function handleSocialSignIn(provider: "google" | "github") {
+    setLoading(true)
+    setError(null)
+    try {
+      // redirect: true make NextAuth redirect to  provider
+      await signIn(provider, { callbackUrl: "/" })
+    } catch (err) {
+      console.error(err)
+      setError("login fail, try again")
+      setLoading(false)
     }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex items-center justify-center p-6">
@@ -80,17 +80,37 @@ export default function LoginPage() {
             <div className="mt-6 grid gap-3">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-lg">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v6" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 9h14" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M12 2v6" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M5 9h14" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
                 <div>
                   <div className="text-sm font-medium">Warm & Inviting</div>
-                  <div className="text-xs opacity-90">a morning coffee ritual, a sunset from a weekend hike</div>
+                  <div className="text-xs opacity-90">
+                    a morning coffee ritual, a sunset from a weekend hike
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-lg">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 18v4" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 12h14" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M12 18v4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
                 <div>
                   <div className="text-sm font-medium"> Professional & Actionable </div>
@@ -99,7 +119,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-6 text-xs opacity-90">Not your first time? Sign in with one click then write you blog.</div>
+            <div className="mt-6 text-xs opacity-90">
+              Not your first time? Sign in with one click then write you blog.
+            </div>
           </div>
 
           {/* Form side */}
@@ -113,17 +135,27 @@ export default function LoginPage() {
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                  />
                 </div>
 
                 <div>
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" placeholder="••••••••" required />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                  />
                 </div>
                 {error && (
-                  <div className="mb-2 p-2 bg-red-100 text-red-500 rounded-md text-sm">
-                    {error}
-                  </div>
+                  <div className="mb-2 p-2 bg-red-100 text-red-500 rounded-md text-sm">{error}</div>
                 )}
 
                 <div className="flex items-center justify-between">
@@ -131,11 +163,14 @@ export default function LoginPage() {
                     <input
                       id="remember"
                       name="remember"
-                      type="checkbox" 
+                      type="checkbox"
                       className="h-4 w-4 rounded border-gray-300"
                       checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}/>
-                    <label htmlFor="remember" className="text-sm">Remember me</label>
+                      onChange={(e) => setRemember(e.target.checked)}
+                    />
+                    <label htmlFor="remember" className="text-sm">
+                      Remember me
+                    </label>
                   </div>
 
                   {/* <a href="#" className="text-sm text-sky-600 hover:underline">Forgot password?</a> */}
@@ -143,7 +178,7 @@ export default function LoginPage() {
 
                 <div className="grid grid-cols-1 gap-2">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign in'}
+                    {loading ? "Signing in..." : "Sign in"}
                   </Button>
 
                   <div className="flex items-center gap-2">
@@ -181,10 +216,10 @@ export default function LoginPage() {
                   </div>
 
                   <div className="text-center text-sm text-gray-500 mt-3">
-                    Don’t have an account? 
-                  <Link href="/register" className="text-sky-600 hover:underline">
+                    Don’t have an account?
+                    <Link href="/register" className="text-sky-600 hover:underline">
                       Sign up
-                  </Link>
+                    </Link>
                   </div>
                 </div>
               </form>
@@ -193,5 +228,5 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
-  );
+  )
 }

@@ -1,21 +1,18 @@
-'use client'
+"use client"
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Search, {
-  AuthorOption,
-  PostFilterValues,
-} from "@/app/ui/post/Search"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import Search, { AuthorOption, PostFilterValues } from "@/app/ui/post/Search"
 import CreatePostButton from "@/app/ui/post/Button"
 import ConfirmDialog from "@/app/ui/post/Dialog"
 import PostTable, { PostListItem } from "@/app/ui/post/PostTable"
 import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 
 const defaultFilters: PostFilterValues = {
-  title: '',
-  startDate: '',
-  endDate: '',
-  authorId: 'all',
+  title: "",
+  startDate: "",
+  endDate: "",
+  authorId: "all",
 }
 
 const PAGE_SIZE = 10
@@ -52,20 +49,20 @@ export default function PostsPage() {
 
   const fetchAuthors = useCallback(async () => {
     try {
-      const response = await fetch('/api/users/authors')
+      const response = await fetch("/api/users/authors")
       if (!response.ok) {
-        throw new Error('获取作者列表失败')
+        throw new Error("获取作者列表失败")
       }
       const payload = (await response.json()) as AuthorsResponse
       if (payload.code !== 200) {
-        throw new Error(payload.message || '获取作者列表失败')
+        throw new Error(payload.message || "获取作者列表失败")
       }
 
       const unique = new Map<string, AuthorOption>()
       payload.data.forEach((author) => {
         unique.set(author.id, {
           id: author.id,
-          name: author.name || '未命名作者',
+          name: author.name || "未命名作者",
         })
       })
       setAuthors(Array.from(unique.values()))
@@ -75,53 +72,50 @@ export default function PostsPage() {
     }
   }, [])
 
-  const fetchPosts = useCallback(
-    async (nextPage: number, activeFilters: PostFilterValues) => {
-      setLoading(true)
-      setErrorMessage(null)
-      try {
-        const params = new URLSearchParams({
-          page: String(nextPage),
-          size: String(PAGE_SIZE),
-        })
+  const fetchPosts = useCallback(async (nextPage: number, activeFilters: PostFilterValues) => {
+    setLoading(true)
+    setErrorMessage(null)
+    try {
+      const params = new URLSearchParams({
+        page: String(nextPage),
+        size: String(PAGE_SIZE),
+      })
 
-        if (activeFilters.title) {
-          params.set('title', activeFilters.title)
-        }
-        if (activeFilters.startDate) {
-          params.set('startDate', activeFilters.startDate)
-        }
-        if (activeFilters.endDate) {
-          params.set('endDate', activeFilters.endDate)
-        }
-        if (activeFilters.authorId && activeFilters.authorId !== 'all') {
-          params.set('authorId', activeFilters.authorId)
-        }
-
-        const response = await fetch(`/api/posts/list?${params.toString()}`)
-        if (!response.ok) {
-          throw new Error('获取文章列表失败')
-        }
-
-        const payload = (await response.json()) as PostListResponse
-        if (payload.code !== 200) {
-          throw new Error(payload.message || '获取文章列表失败')
-        }
-
-        setPosts(payload.data.list)
-        setPage(payload.data.page)
-        setTotal(payload.data.total)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : '获取文章列表失败'
-        setErrorMessage(message)
-        setPosts([])
-        setTotal(0)
-      } finally {
-        setLoading(false)
+      if (activeFilters.title) {
+        params.set("title", activeFilters.title)
       }
-    },
-    []
-  )
+      if (activeFilters.startDate) {
+        params.set("startDate", activeFilters.startDate)
+      }
+      if (activeFilters.endDate) {
+        params.set("endDate", activeFilters.endDate)
+      }
+      if (activeFilters.authorId && activeFilters.authorId !== "all") {
+        params.set("authorId", activeFilters.authorId)
+      }
+
+      const response = await fetch(`/api/posts/list?${params.toString()}`)
+      if (!response.ok) {
+        throw new Error("获取文章列表失败")
+      }
+
+      const payload = (await response.json()) as PostListResponse
+      if (payload.code !== 200) {
+        throw new Error(payload.message || "获取文章列表失败")
+      }
+
+      setPosts(payload.data.list)
+      setPage(payload.data.page)
+      setTotal(payload.data.total)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "获取文章列表失败"
+      setErrorMessage(message)
+      setPosts([])
+      setTotal(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     fetchAuthors()
@@ -148,25 +142,25 @@ export default function PostsPage() {
       if (nextPage > totalPages) return
       fetchPosts(nextPage, filters)
     },
-    [fetchPosts, filters, total]
+    [fetchPosts, filters, total],
   )
 
   const handleView = useCallback(
     (postId: string) => {
       router.push(`/posts/${postId}`)
     },
-    [router]
+    [router],
   )
 
   const handleEdit = useCallback(
     (postId: string) => {
       router.push(`/posts/${postId}/edit`)
     },
-    [router]
+    [router],
   )
 
   const handleDeleteRequest = useCallback((postId: string) => {
-    console.log('handleDeleteRequest');
+    console.log("handleDeleteRequest")
     // setTargetPostId(postId)
     setDialogOpen(true)
   }, [])
@@ -181,21 +175,21 @@ export default function PostsPage() {
     if (!targetPostId) return
     setDeleteLoading(true)
     try {
-      const response = await fetch('/api/posts/list', {
-        method: 'DELETE',
+      const response = await fetch("/api/posts/list", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: targetPostId }),
       })
 
       if (!response.ok) {
-        throw new Error('删除文章失败')
+        throw new Error("删除文章失败")
       }
 
       const payload = await response.json()
       if (payload.code !== 200) {
-        throw new Error(payload.message || '删除文章失败')
+        throw new Error(payload.message || "删除文章失败")
       }
 
       setDialogOpen(false)
@@ -204,17 +198,14 @@ export default function PostsPage() {
       const nextPage = Math.min(page, totalPages)
       fetchPosts(nextPage, filters)
     } catch (error) {
-      const message = error instanceof Error ? error.message : '删除文章失败'
+      const message = error instanceof Error ? error.message : "删除文章失败"
       setErrorMessage(message)
     } finally {
       setDeleteLoading(false)
     }
   }, [fetchPosts, filters, page, targetPostId, total])
 
-  const pagination = useMemo(
-    () => ({ page, size: PAGE_SIZE, total }),
-    [page, total]
-  )
+  const pagination = useMemo(() => ({ page, size: PAGE_SIZE, total }), [page, total])
 
   return (
     <div className="space-y-6">
@@ -249,7 +240,7 @@ export default function PostsPage() {
         open={dialogOpen}
         title="确认删除文章"
         description="删除后文章将无法恢复，确认要继续吗？"
-        confirmText={deleteLoading ? '删除中...' : '删除'}
+        confirmText={deleteLoading ? "删除中..." : "删除"}
         confirmDisabled={deleteLoading}
         cancelDisabled={deleteLoading}
         onConfirm={handleDeleteConfirm}

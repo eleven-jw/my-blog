@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
 type CreatePostButtonProps = {
@@ -9,12 +9,10 @@ type CreatePostButtonProps = {
 }
 
 export default function CreatePostButton({
-  href = '/posts/create',
-  label = '新建文章',
+  href = "/posts/create",
+  label = "新建文章",
 }: CreatePostButtonProps) {
   const router = useRouter()
 
-  return (
-    <Button onClick={() => router.push(href)}>{label}</Button>
-  )
+  return <Button onClick={() => router.push(href)}>{label}</Button>
 }

@@ -1,9 +1,9 @@
-import { getServerSession } from 'next-auth'
-import { notFound, redirect } from 'next/navigation'
+import { getServerSession } from "next-auth"
+import { notFound, redirect } from "next/navigation"
 import PostForm from "@/app/ui/post/PostForm"
 import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 import { authOptions } from "@/lib/auth"
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma"
 
 type PageProps = {
   params: { id: string }
@@ -48,7 +48,7 @@ export default async function EditPostPage({ params }: PageProps) {
     notFound()
   }
 
-  if (currentUser.role !== 'ADMIN' && post.authorId !== currentUser.id) {
+  if (currentUser.role !== "ADMIN" && post.authorId !== currentUser.id) {
     notFound()
   }
 
@@ -63,8 +63,8 @@ export default async function EditPostPage({ params }: PageProps) {
         postId={post.id}
         initialValues={{
           title: post.title,
-          content: post.content ?? '',
-          status: post.status ?? 'draft',
+          content: post.content ?? "",
+          status: post.status ?? "draft",
           tags: post.tags ?? [],
         }}
       />

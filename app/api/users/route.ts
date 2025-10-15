@@ -1,16 +1,13 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { prisma } from '@/lib/prisma';
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  console.log('users session', session);
+  const session = await getServerSession(authOptions)
+  console.log("users session", session)
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { code: 401, message: 'Please login' },
-      { status: 401 }
-    );
+    return NextResponse.json({ code: 401, message: "Please login" }, { status: 401 })
   }
 
   try {
@@ -20,44 +17,38 @@ export async function GET() {
         select: {
           id: true,
           name: true,
-        image: true,
-        fansCount: true,
-        postCount: true,
-        interests: true,
-      },
-    }),
+          image: true,
+          fansCount: true,
+          postCount: true,
+          interests: true,
+        },
+      }),
       prisma.post.count({
         where: { authorId: session.user.id },
       }),
-    ]);
+    ])
 
     if (!user) {
-      return NextResponse.json(
-        { code: 404, message: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ code: 404, message: "User not found" }, { status: 404 })
     }
 
     if (user.postCount !== postCount) {
       await prisma.user.update({
         where: { id: user.id },
         data: { postCount },
-      });
+      })
     }
 
-    const payload = { ...user, postCount };
+    const payload = { ...user, postCount }
 
-    console.log('user', payload);
+    console.log("user", payload)
     return NextResponse.json({
       code: 200,
-      message: 'success',
+      message: "success",
       data: payload,
-    });
+    })
   } catch (err) {
-    console.log('err', err);
-    return NextResponse.json(
-      { code: 500, message: 'Server error' },
-      { status: 500 }
-    );
+    console.log("err", err)
+    return NextResponse.json({ code: 500, message: "Server error" }, { status: 500 })
   }
 }

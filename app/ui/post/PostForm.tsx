@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -8,10 +8,7 @@ import RichTextEditor from "@/app/ui/post/RichTextEditor"
 import { getTomorrowDate, getCurrentDate } from "@/lib/utils"
 import TagInput from "@/app/ui/post/TagInput"
 import { Tag } from "@/types/post"
-import {
-  MAX_TAGS_PER_POST,
-  TAG_NAME_MAX_LENGTH,
-} from "@/lib/tagRules"
+import { MAX_TAGS_PER_POST, TAG_NAME_MAX_LENGTH } from "@/lib/tagRules"
 
 type PostFormValues = {
   title: string
@@ -27,20 +24,20 @@ type PostFormProps = {
 }
 
 const statusOptions: Array<{ value: string; label: string }> = [
-  { value: 'draft', label: 'draft' },
-  { value: 'published', label: 'published' },
-  { value: 'scheduled', label: 'scheduled' },
+  { value: "draft", label: "draft" },
+  { value: "published", label: "published" },
+  { value: "scheduled", label: "scheduled" },
 ]
 
 export default function PostForm({ postId, initialValues }: PostFormProps) {
   const router = useRouter()
-  const [title, setTitle] = useState(initialValues?.title ?? '')
-  const [content, setContent] = useState(initialValues?.content ?? '<p></p>')
-  const [status, setStatus] = useState(initialValues?.status ?? 'published')
+  const [title, setTitle] = useState(initialValues?.title ?? "")
+  const [content, setContent] = useState(initialValues?.content ?? "<p></p>")
+  const [status, setStatus] = useState(initialValues?.status ?? "published")
   const [publishedAt, setPublishedAt] = useState(initialValues?.publishedAt ?? getCurrentDate())
   const [selectedTags, setSelectedTags] = useState<Tag[]>(initialValues?.tags ?? [])
   const [existingTags, setExistingTags] = useState<Tag[]>([])
-  const [tagError, setTagError] = useState('')
+  const [tagError, setTagError] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -49,21 +46,19 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
   useEffect(() => {
     const loadTags = async () => {
       try {
-        const data = await fetch('/api/tags');
-        if (!data.ok) throw new Error('Failed to get tags');
+        const data = await fetch("/api/tags")
+        if (!data.ok) throw new Error("Failed to get tags")
 
         const tags = await data.json()
         if (tags.code !== 200) throw new Error(tags.message)
-        const deduped = Array.from(
-          new Map(tags.data.map((tag: Tag) => [tag.name, tag])).values()
-        )
+        const deduped = Array.from(new Map(tags.data.map((tag: Tag) => [tag.name, tag])).values())
         setExistingTags(deduped)
       } catch (err) {
-        console.error('Failed to get tags:', err);
+        console.error("Failed to get tags:", err)
       }
-    };
-    loadTags();
-  }, []);
+    }
+    loadTags()
+  }, [])
   useEffect(() => {
     if (!initialValues?.tags || !initialValues.tags.length) {
       return
@@ -83,11 +78,11 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
     })
   }, [initialValues?.tags])
   const handleAddNewTag = async (tagName: string) => {
-    const trimmed = tagName.trim();
-    
+    const trimmed = tagName.trim()
+
     if (!trimmed) {
-      setTagError('please input tag name')
-      return;
+      setTagError("please input tag name")
+      return
     }
 
     if (trimmed.length > TAG_NAME_MAX_LENGTH) {
@@ -95,11 +90,11 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
       return
     }
 
-    const isExist = existingTags.some(t => t.name === trimmed) || 
-                   selectedTags.some(t => t.name === trimmed);
+    const isExist =
+      existingTags.some((t) => t.name === trimmed) || selectedTags.some((t) => t.name === trimmed)
     if (isExist) {
-      setTagError('tag exits');
-      return;
+      setTagError("tag exits")
+      return
     }
 
     if (selectedTags.length >= MAX_TAGS_PER_POST) {
@@ -109,39 +104,39 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
 
     const tempId = `new-${Date.now()}`
     const newTag = { id: tempId, name: trimmed }
-    setSelectedTags(prev => [...prev, newTag])
-    setExistingTags(prev => {
-      if (prev.some(tag => tag.name === trimmed)) {
+    setSelectedTags((prev) => [...prev, newTag])
+    setExistingTags((prev) => {
+      if (prev.some((tag) => tag.name === trimmed)) {
         return prev
       }
       return [...prev, newTag]
     })
-    setTagError('')
-  };
+    setTagError("")
+  }
 
   const handleToggleExistingTag = (tag: Tag) => {
-    setSelectedTags(prev => {
-      const isSelected = prev.some(t => t.id === tag.id);
+    setSelectedTags((prev) => {
+      const isSelected = prev.some((t) => t.id === tag.id)
       if (isSelected) {
-        return prev.filter(t => t.id !== tag.id);
+        return prev.filter((t) => t.id !== tag.id)
       } else {
         if (prev.length >= MAX_TAGS_PER_POST) {
           setTagError(`please choose less than ${MAX_TAGS_PER_POST} tags`)
-          return prev;
+          return prev
         }
-        if (prev.some(t => t.name === tag.name)) {
-          setTagError('tag exits');
-          return prev;
+        if (prev.some((t) => t.name === tag.name)) {
+          setTagError("tag exits")
+          return prev
         }
-        return [...prev, tag];
+        return [...prev, tag]
       }
-    });
-    setTagError('');
-  };
+    })
+    setTagError("")
+  }
 
   const handleRemoveTag = (tag: Tag) => {
-    setSelectedTags(prev => prev.filter(t => t.id !== tag.id));
-  };
+    setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id))
+  }
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPublishedAt(event.target.value)
@@ -153,54 +148,53 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
     setSuccess(null)
 
     try {
-      const plainText = content.replace(/<[^>]*>/g, '').trim()
+      const plainText = content.replace(/<[^>]*>/g, "").trim()
       if (!plainText) {
-        throw new Error('content should not be empty')
+        throw new Error("content should not be empty")
       }
 
       const payload: Record<string, string | string[] | Tag[]> = {
         title: title.trim(),
         content,
         status,
-        tags: selectedTags.map(tag => tag.name)
+        tags: selectedTags.map((tag) => tag.name),
       }
 
-      if (status === 'scheduled') {
+      if (status === "scheduled") {
         payload.publishedAt = publishedAt
       }
 
       if (isEditMode && postId) {
         payload.id = postId
       }
-      
 
-      const response = await fetch('/api/posts/list', {
-        method: isEditMode ? 'PUT' : 'POST',
+      const response = await fetch("/api/posts/list", {
+        method: isEditMode ? "PUT" : "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save')
+        throw new Error("Failed to save")
       }
 
       const data = await response.json()
       if (data.code !== 200) {
-        throw new Error(data.message || 'Failed to save')
+        throw new Error(data.message || "Failed to save")
       }
 
-      setSuccess(isEditMode ? 'update sucess' : 'create success')
+      setSuccess(isEditMode ? "update sucess" : "create success")
 
       const nextPostId = data.data?.id ?? postId
       if (nextPostId) {
         router.push(`/posts/${nextPostId}`)
       } else {
-        router.push('/posts')
+        router.push("/posts")
       }
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : 'Failed to save'
+      const message = submitError instanceof Error ? submitError.message : "Failed to save"
       setError(message)
     } finally {
       setSubmitting(false)
@@ -241,7 +235,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
           </select>
         </div>
 
-        {status === 'scheduled' && (
+        {status === "scheduled" && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">Will Publish At:</label>
             <Input
@@ -254,7 +248,11 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
         )}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Content</label>
-          <RichTextEditor value={content} onChange={setContent} placeholder="please input content" />
+          <RichTextEditor
+            value={content}
+            onChange={setContent}
+            placeholder="please input content"
+          />
         </div>
 
         <TagInput
@@ -281,7 +279,7 @@ export default function PostForm({ postId, initialValues }: PostFormProps) {
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={submitting}>
-            {submitting ? 'saving...' : 'save'}
+            {submitting ? "saving..." : "save"}
           </Button>
           <Button
             type="button"

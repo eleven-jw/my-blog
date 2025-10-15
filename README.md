@@ -12,14 +12,14 @@ My Blog is a multi-tenant blogging platform built with Next.js. It combines a mo
 
 ## Technology Stack
 
-| Layer | Technology |
-| --- | --- |
-| Web Framework | [Next.js 15](https://nextjs.org/) (App Router) |
-| UI | React 19, Tailwind CSS 4, shadcn/ui primitives, Heroicons, Lucide |
-| Editor | TipTap (with highlight.js, lowlight) |
-| Auth | NextAuth.js with Prisma adapter, Credentials + Google providers |
-| Data | Prisma ORM, PostgreSQL |
-| Validation & Utils | Zod, sanitize-html, node-cron |
+| Layer              | Technology                                                        |
+| ------------------ | ----------------------------------------------------------------- |
+| Web Framework      | [Next.js 15](https://nextjs.org/) (App Router)                    |
+| UI                 | React 19, Tailwind CSS 4, shadcn/ui primitives, Heroicons, Lucide |
+| Editor             | TipTap (with highlight.js, lowlight)                              |
+| Auth               | NextAuth.js with Prisma adapter, Credentials + Google providers   |
+| Data               | Prisma ORM, PostgreSQL                                            |
+| Validation & Utils | Zod, sanitize-html, node-cron                                     |
 
 ## System Architecture
 
@@ -72,16 +72,16 @@ pnpm dev
 
 ### Useful scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Run the Turbopack development server |
-| `pnpm build` | Produce a production bundle |
-| `pnpm start` | Serve the production build |
-| `pnpm lint` | Run ESLint (Next.js core web vitals, zero warnings) |
-| `pnpm lint:fix` | Run ESLint with auto-fix enabled |
-| `pnpm format` | Check formatting with Prettier |
-| `pnpm format:write` | Apply Prettier formatting to the codebase |
-| `pnpm prisma migrate dev` | Apply migrations and regenerate Prisma client |
+| Command                   | Description                                         |
+| ------------------------- | --------------------------------------------------- |
+| `pnpm dev`                | Run the Turbopack development server                |
+| `pnpm build`              | Produce a production bundle                         |
+| `pnpm start`              | Serve the production build                          |
+| `pnpm lint`               | Run ESLint (Next.js core web vitals, zero warnings) |
+| `pnpm lint:fix`           | Run ESLint with auto-fix enabled                    |
+| `pnpm format`             | Check formatting with Prettier                      |
+| `pnpm format:write`       | Apply Prettier formatting to the codebase           |
+| `pnpm prisma migrate dev` | Apply migrations and regenerate Prisma client       |
 
 ## Project Structure
 

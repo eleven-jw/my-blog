@@ -1,9 +1,9 @@
-import Image from 'next/image'
-import { useMemo, useState } from 'react'
+import Image from "next/image"
+import { useMemo, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import type { BioProps } from '@/types/use'
+import type { BioProps } from "@/types/use"
 
-const FALLBACK_AVATAR = '/avatar.jpg'
+const FALLBACK_AVATAR = "/avatar.jpg"
 
 export default function Bio({ userInfo }: BioProps) {
   const [errored, setErrored] = useState(false)
@@ -17,7 +17,7 @@ export default function Bio({ userInfo }: BioProps) {
     }
 
     // Accept remote HTTP(S) images and local files starting with a slash
-    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('/')) {
+    if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
       return src
     }
 
@@ -40,7 +40,9 @@ export default function Bio({ userInfo }: BioProps) {
           />
         </div>
         <div className="flex flex-col justify-center gap-2">
-          <div className="text-base font-semibold text-gray-900">{userInfo?.name || '未命名用户'}</div>
+          <div className="text-base font-semibold text-gray-900">
+            {userInfo?.name || "未命名用户"}
+          </div>
           <div className="flex flex-row gap-4 text-sm text-gray-600">
             <div>
               <span className="font-semibold text-gray-900">{userInfo?.fansCount ?? 0}</span>

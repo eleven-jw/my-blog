@@ -1,8 +1,6 @@
-'use client'
+"use client"
 
-import DataTable, {
-  type DataTableColumnDef,
-} from "@/app/ui/common/data-table"
+import DataTable, { type DataTableColumnDef } from "@/app/ui/common/data-table"
 import { Button } from "@/components/ui/button"
 
 export type PublicPostListItem = {
@@ -27,57 +25,57 @@ type PublicPostsTableProps = {
 }
 
 const columns = (
-  onView: (postId: string) => void
+  onView: (postId: string) => void,
 ): DataTableColumnDef<PublicPostListItem, unknown>[] => [
   {
-    accessorKey: 'title',
-    header: '标题',
+    accessorKey: "title",
+    header: "标题",
     meta: {
-      headerClassName: 'w-[35%] text-left',
-      cellClassName: 'font-medium text-gray-900',
+      headerClassName: "w-[35%] text-left",
+      cellClassName: "font-medium text-gray-900",
     },
     cell: ({ row }) => row.original.title,
   },
   {
-    accessorKey: 'author',
-    header: '作者',
+    accessorKey: "author",
+    header: "作者",
     meta: {
-      headerClassName: 'w-[20%] text-left',
+      headerClassName: "w-[20%] text-left",
     },
-    cell: ({ row }) => row.original.author?.name ?? 'Unknown Author',
+    cell: ({ row }) => row.original.author?.name ?? "Unknown Author",
   },
   {
-    accessorKey: 'views',
-    header: '浏览',
+    accessorKey: "views",
+    header: "浏览",
     meta: {
-      headerClassName: 'w-[10%] text-right',
-      cellClassName: 'text-right',
+      headerClassName: "w-[10%] text-right",
+      cellClassName: "text-right",
     },
     cell: ({ row }) => row.original.views,
   },
   {
-    accessorKey: 'likes',
-    header: '点赞',
+    accessorKey: "likes",
+    header: "点赞",
     meta: {
-      headerClassName: 'w-[10%] text-right',
-      cellClassName: 'text-right',
+      headerClassName: "w-[10%] text-right",
+      cellClassName: "text-right",
     },
     cell: ({ row }) => row.original.likes,
   },
   {
-    accessorKey: 'commentsCount',
-    header: '评论',
+    accessorKey: "commentsCount",
+    header: "评论",
     meta: {
-      headerClassName: 'w-[10%] text-right',
-      cellClassName: 'text-right',
+      headerClassName: "w-[10%] text-right",
+      cellClassName: "text-right",
     },
     cell: ({ row }) => row.original.commentsCount,
   },
   {
-    accessorKey: 'createdAt',
-    header: '创建时间',
+    accessorKey: "createdAt",
+    header: "创建时间",
     meta: {
-      headerClassName: 'w-[10%] text-left whitespace-nowrap',
+      headerClassName: "w-[10%] text-left whitespace-nowrap",
     },
     cell: ({ row }) => formatDate(row.original.createdAt),
   },
@@ -90,12 +88,12 @@ const columns = (
   //   cell: ({ row }) => formatDate(row.original.publishedAt),
   // },
   {
-    id: 'actions',
-    header: '操作',
+    id: "actions",
+    header: "操作",
     enableSorting: false,
     meta: {
-      headerClassName: 'w-[5%] text-center',
-      cellClassName: 'text-center',
+      headerClassName: "w-[5%] text-center",
+      cellClassName: "text-center",
     },
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" onClick={() => onView(row.original.id)}>
@@ -124,13 +122,13 @@ export default function PublicPostsTable({ data, loading, onView }: PublicPostsT
 function formatDate(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
-    return '-'
+    return "-"
   }
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date)
 }

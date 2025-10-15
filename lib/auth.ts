@@ -1,11 +1,11 @@
-import { getServerSession } from "next-auth/next";
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { getServerSession } from "next-auth/next"
+import NextAuth from "next-auth"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { prisma } from "@/lib/prisma"
+import GoogleProvider from "next-auth/providers/google"
+import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 import type { Role } from "@prisma/client"
 
 export const authOptions = {
@@ -17,9 +17,9 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
       authorization: {
         params: {
-          prompt: 'consent',
-          access_type: 'offline',
-          response_type: 'code',
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
         },
       },
     }),
@@ -30,35 +30,32 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log('credentials', credentials)
+        console.log("credentials", credentials)
         if (!credentials?.email || !credentials?.password) {
-          console.log('please input you email and password');
-          return null;
+          console.log("please input you email and password")
+          return null
         }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-        });
+        })
 
         if (!user) {
-          console.log('no this user');
-          throw new Error('no this user');
+          console.log("no this user")
+          throw new Error("no this user")
         }
 
-        const passwordMatch = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        const passwordMatch = await bcrypt.compare(credentials.password, user.password)
 
         if (!passwordMatch) {
-          console.log('wrong password');
-          throw new Error('wrong password');
+          console.log("wrong password")
+          throw new Error("wrong password")
         }
 
         if (credentials?.remember === true) {
-          console.log(credentials?.remember);
-          const refreshToken = process.env.REFRESH_TOKEN_SECRET;
-          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30days
+          console.log(credentials?.remember)
+          const refreshToken = process.env.REFRESH_TOKEN_SECRET
+          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30days
 
           await prisma.session.create({
             data: {
@@ -66,7 +63,7 @@ export const authOptions = {
               userId: user.id,
               expires: expiresAt,
             },
-          });
+          })
 
           // 可以根据需要在此处生成访问令牌并下发给客户端
         }
@@ -75,8 +72,8 @@ export const authOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          remember: credentials?.remember === true, 
-        };
+          remember: credentials?.remember === true,
+        }
       },
     }),
   ],
@@ -84,58 +81,58 @@ export const authOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', 
-      httpOnly: true,  // prevent XSS
-      sameSite: 'lax',  // prevent CSRF 
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true, // prevent XSS
+      sameSite: "lax", // prevent CSRF
     },
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       //optional for report
-      console.log('user', user);
-      console.log('account', account);
-      console.log('profile', profile);
-      console.log('email', email);
-      console.log('credentials', credentials);
-      return true;
+      console.log("user", user)
+      console.log("account", account)
+      console.log("profile", profile)
+      console.log("email", email)
+      console.log("credentials", credentials)
+      return true
     },
-    authorized({auth, request:{nextUrl}}) {
-        const isLoggedIn = !!auth?.user;
-        const isOnDashboard = nextUrl.pathname.startsWith('/');
-        if(isOnDashboard) {
-            if(isLoggedIn) {
-                return true;
-            }
-            return false;
-        } else if(isLoggedIn) {
-            return Response.redirect(new URL('/', nextUrl));
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user
+      const isOnDashboard = nextUrl.pathname.startsWith("/")
+      if (isOnDashboard) {
+        if (isLoggedIn) {
+          return true
         }
-          
-        return true;
+        return false
+      } else if (isLoggedIn) {
+        return Response.redirect(new URL("/", nextUrl))
+      }
+
+      return true
     },
     async session({ session, token }) {
-      console.log('session', session)
+      console.log("session", session)
       if (session.user) {
-        session.user.id = token.sub;
+        session.user.id = token.sub
       }
-      return session;
+      return session
     },
     async jwt({ token, user, account }) {
       // fisrt login
       if (user) {
-        token.sub = user.id;
-        token.email = user.email;
-        token.remember = account?.remember;
+        token.sub = user.id
+        token.email = user.email
+        token.remember = account?.remember
       }
       // token expired refresh token
       if (token.expired && token.refresh_token) {
         try {
           const storedToken = await prisma.session.findUnique({
             where: { sessionToken: token.refresh_token },
-          });
+          })
 
           if (!storedToken || storedToken.expires < new Date()) {
-            throw new Error('invalid or expired token!');
+            throw new Error("invalid or expired token!")
           }
 
           // generate new accessToken（JWT
@@ -147,16 +144,16 @@ export const authOptions = {
               exp: Math.floor(Date.now() / 1000) + 3600, // 1h later
             },
             process.env.ACCESS_TOKEN_SECRET!,
-          );
+          )
 
-          token.accessToken = newAccessToken;
-          token.expiresIn = '1h';
+          token.accessToken = newAccessToken
+          token.expiresIn = "1h"
 
           // 2.6 generate refreshToken
-          const newRefreshToken = process.env.REFRESH_TOKEN_SECRET;
+          const newRefreshToken = process.env.REFRESH_TOKEN_SECRET
           const newRefreshExpiresAt = new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
-          );
+            Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+          )
 
           // 2.7 update refreshToken
           await prisma.session.update({
@@ -165,55 +162,55 @@ export const authOptions = {
               sessionToken: newRefreshToken,
               expires: newRefreshExpiresAt,
             },
-          });
+          })
 
-          token.refreshToken = newRefreshToken;
-          return token;
+          token.refreshToken = newRefreshToken
+          return token
         } catch (err) {
-          console.error('刷新令牌失败:', err);
+          console.error("刷新令牌失败:", err)
         }
       }
 
-      return token;
+      return token
     },
     async signOut({ session, res }) {
-        if (session?.user?.id) {
-            // 清除 HttpOnly Cookie（关键！）
-            res.clearCookie('next-auth.session-token', {
-            path: '/',
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-            sameSite: 'lax',
-        });
+      if (session?.user?.id) {
+        // 清除 HttpOnly Cookie（关键！）
+        res.clearCookie("next-auth.session-token", {
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          httpOnly: true,
+          sameSite: "lax",
+        })
 
         // 清理数据库会话记录
         await prisma.session.deleteMany({
-            where: { userId: session.user.id },
-        });
-        }
-        return;
+          where: { userId: session.user.id },
+        })
+      }
+      return
     },
   },
   pages: {
     signIn: "/login",
   },
-};
-export const { auth, signIn, signOut } = NextAuth(authOptions);
+}
+export const { auth, signIn, signOut } = NextAuth(authOptions)
 
 export async function getUser() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return null
 
   return await prisma.user.findUnique({
     where: { id: session.user.id },
-  });
+  })
 }
 export function requireRole(user: { role: Role } | null | undefined, role: Role) {
   if (!user || user.role !== role) {
-    throw new Error("没有权限访问");
+    throw new Error("没有权限访问")
   }
 }
 export async function isLoggedIn() {
-  const user = await getUser();
-  return !!user;
+  const user = await getUser()
+  return !!user
 }

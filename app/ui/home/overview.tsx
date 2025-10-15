@@ -1,9 +1,6 @@
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card"
-import { cn } from "@/lib/utils";
-import type { Props } from "@/types/home";
+import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+import type { Props } from "@/types/home"
 
 export default function StatsOverview({ items }: Props) {
   return (
@@ -16,7 +13,7 @@ export default function StatsOverview({ items }: Props) {
               className={cn(
                 "flex-1 min-w-0 px-4 py-3 bg-transparent",
                 // add divider between items except first
-                idx !== 0 ? "sm:border-l sm:border-gray-200" : ""
+                idx !== 0 ? "sm:border-l sm:border-gray-200" : "",
               )}
             >
               <div className="text-sm text-gray-500">{item.label}</div>
@@ -26,11 +23,11 @@ export default function StatsOverview({ items }: Props) {
               </div>
 
               <div>
-                 {item.change ? (
+                {item.change ? (
                   <div
                     className={cn(
                       "inline-flex items-center px-2 py-0.5 text-sm font-medium rounded text-white",
-                      item.changeVariant === "down" ? "bg-red-500" : "bg-green-500"
+                      item.changeVariant === "down" ? "bg-red-500" : "bg-green-500",
                     )}
                   >
                     <svg
@@ -56,5 +53,5 @@ export default function StatsOverview({ items }: Props) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

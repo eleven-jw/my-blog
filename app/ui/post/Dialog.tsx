@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { Button } from "@/components/ui/button"
 
@@ -18,8 +18,8 @@ export default function Dialog({
   open,
   title,
   description,
-  confirmText = '确定',
-  cancelText = '取消',
+  confirmText = "确定",
+  cancelText = "取消",
   onConfirm,
   onCancel,
   confirmDisabled,
@@ -31,14 +31,17 @@ export default function Dialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        {description && (
-          <p className="mt-2 text-sm text-gray-600">{description}</p>
-        )}
+        {description && <p className="mt-2 text-sm text-gray-600">{description}</p>}
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="outline" onClick={onCancel} disabled={cancelDisabled}>
             {cancelText}
           </Button>
-          <Button className="bg-blue-500 text-white" variant="outline" onClick={onConfirm} disabled={confirmDisabled}>
+          <Button
+            className="bg-blue-500 text-white"
+            variant="outline"
+            onClick={onConfirm}
+            disabled={confirmDisabled}
+          >
             {confirmText}
           </Button>
         </div>

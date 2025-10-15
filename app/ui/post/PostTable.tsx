@@ -1,9 +1,7 @@
-'use client'
+"use client"
 
 import { Button } from "@/components/ui/button"
-import DataTable, {
-  type DataTableColumnDef,
-} from "@/app/ui/common/data-table"
+import DataTable, { type DataTableColumnDef } from "@/app/ui/common/data-table"
 
 export type PostListItem = {
   id: string
@@ -40,107 +38,115 @@ type PostTableProps = {
 const columns = (
   onView: (postId: string) => void,
   onEdit: (postId: string) => void,
-  onDelete: (postId: string) => void
+  onDelete: (postId: string) => void,
 ): DataTableColumnDef<PostListItem, unknown>[] => [
   {
-    accessorKey: 'title',
-    header: '标题',
+    accessorKey: "title",
+    header: "标题",
     meta: {
-      headerClassName: 'w-[28%] text-left',
-      cellClassName: 'font-medium text-gray-900',
+      headerClassName: "w-[28%] text-left",
+      cellClassName: "font-medium text-gray-900",
     },
     cell: ({ row }) => row.original.title,
   },
   {
-    accessorKey: 'author',
-    header: '作者',
+    accessorKey: "author",
+    header: "作者",
     meta: {
-      headerClassName: 'w-[12%] text-left',
+      headerClassName: "w-[12%] text-left",
     },
-    cell: ({ row }) => row.original.author?.name ?? 'Unknown Author',
+    cell: ({ row }) => row.original.author?.name ?? "Unknown Author",
   },
   {
-    accessorKey: 'status',
-    header: '状态',
+    accessorKey: "status",
+    header: "状态",
     meta: {
-      headerClassName: 'w-[10%] text-left',
+      headerClassName: "w-[10%] text-left",
     },
     cell: ({ row }) => row.original.status,
   },
   {
-    accessorKey: 'views',
-    header: '浏览',
+    accessorKey: "views",
+    header: "浏览",
     meta: {
-      headerClassName: 'w-[10%] text-right',
-      cellClassName: 'text-right',
+      headerClassName: "w-[10%] text-right",
+      cellClassName: "text-right",
     },
     cell: ({ row }) => row.original.views,
   },
   {
-    accessorKey: 'likes',
-    header: '点赞',
+    accessorKey: "likes",
+    header: "点赞",
     meta: {
-      headerClassName: 'w-[10%] text-right',
-      cellClassName: 'text-right',
+      headerClassName: "w-[10%] text-right",
+      cellClassName: "text-right",
     },
     cell: ({ row }) => row.original.likes,
   },
   {
-    accessorKey: 'commentsCount',
-    header: '评论',
+    accessorKey: "commentsCount",
+    header: "评论",
     meta: {
-      headerClassName: 'w-[10%] text-right',
-      cellClassName: 'text-right',
+      headerClassName: "w-[10%] text-right",
+      cellClassName: "text-right",
     },
     cell: ({ row }) => row.original.commentsCount,
   },
   {
-    accessorKey: 'createdAt',
-    header: '创建时间',
+    accessorKey: "createdAt",
+    header: "创建时间",
     meta: {
-      headerClassName: 'w-[10%] text-left',
+      headerClassName: "w-[10%] text-left",
     },
     cell: ({ row }) => formatDate(row.original.createdAt),
   },
   {
-    accessorKey: 'publisedAt',
-    header: '发布时间',
+    accessorKey: "publisedAt",
+    header: "发布时间",
     meta: {
-      headerClassName: 'w-[10%] text-left',
+      headerClassName: "w-[10%] text-left",
     },
     cell: ({ row }) => formatDate(row.original.publisedAt),
   },
   {
-    accessorKey: 'updatedAt',
-    header: '更新时间',
+    accessorKey: "updatedAt",
+    header: "更新时间",
     meta: {
-      headerClassName: 'w-[10%] text-left',
+      headerClassName: "w-[10%] text-left",
     },
     cell: ({ row }) => formatDate(row.original.updatedAt),
   },
   {
-    id: 'actions',
-    header: '操作',
+    id: "actions",
+    header: "操作",
     enableSorting: false,
     meta: {
-      headerClassName: 'w-[10%] text-center',
-      cellClassName: 'text-center',
+      headerClassName: "w-[10%] text-center",
+      cellClassName: "text-center",
     },
     cell: ({ row }) => (
       <div className="flex items-center justify-center gap-2">
         <Button variant="ghost" size="sm" onClick={() => onView(row.original.id)}>
           查看
         </Button>
-        <Button variant="ghost" size="sm" onClick={(e) => {
-          e.stopPropagation();
-          onEdit(row.original.id)
-        }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit(row.original.id)
+          }}
+        >
           编辑
         </Button>
-        <Button variant="ghost" size="sm" onClick={(e) => {
-          e.stopPropagation();
-          onDelete(row.original.id)
-        }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(row.original.id)
+          }}
+        >
           删除
         </Button>
       </div>
@@ -202,13 +208,13 @@ export default function PostTable({
 function formatDate(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) {
-    return '-'
+    return "-"
   }
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date)
 }

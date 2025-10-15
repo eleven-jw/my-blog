@@ -1,18 +1,18 @@
-import { getServerSession } from 'next-auth'
-import { notFound, redirect } from 'next/navigation'
+import { getServerSession } from "next-auth"
+import { notFound, redirect } from "next/navigation"
 import PostBreadcrumb from "@/app/ui/post/PostBreadcrumb"
 import { authOptions } from "@/lib/auth"
-import { prisma } from '@/lib/prisma'
-import PostContent from '@/app/ui/post/PostContent'
-import type { PostComment } from '@/app/ui/post/types'
+import { prisma } from "@/lib/prisma"
+import PostContent from "@/app/ui/post/PostContent"
+import type { PostComment } from "@/app/ui/post/types"
 
 function formatDate(value: Date) {
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(value)
 }
 
@@ -39,7 +39,6 @@ export default async function Page({ params, searchParams }: PageProps) {
     notFound()
   }
 
-
   const { id } = params
 
   try {
@@ -55,7 +54,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       },
     })
   } catch (err) {
-    console.log('failed to update views')
+    console.log("failed to update views")
   }
 
   const post = await prisma.post.findUnique({
@@ -95,18 +94,18 @@ export default async function Page({ params, searchParams }: PageProps) {
   const likeCount = await prisma.like.count({ where: { postId: post.id } })
   const favoriteCount = await prisma.userFavorite.count({ where: { postId: post.id } })
   const isOwner = post.authorId === currentUser.id
-  const isAdmin = currentUser.role === 'ADMIN'
-  const isPublished = post.status === 'published'
+  const isAdmin = currentUser.role === "ADMIN"
+  const isPublished = post.status === "published"
 
   if (!isOwner && !isAdmin && !isPublished) {
     notFound()
   }
 
-  const isFromExplore = searchParams?.from === 'explore'
-  const parentHref = isFromExplore ? '/explore' : '/posts'
-  const parentLabel = isFromExplore ? '文章广场' : '文章管理'
+  const isFromExplore = searchParams?.from === "explore"
+  const parentHref = isFromExplore ? "/explore" : "/posts"
+  const parentLabel = isFromExplore ? "文章广场" : "文章管理"
   const breadcrumbItems = [
-    { label: '首页', href: '/' },
+    { label: "首页", href: "/" },
     { label: parentLabel, href: parentHref },
     { label: post.title },
   ]
@@ -114,26 +113,26 @@ export default async function Page({ params, searchParams }: PageProps) {
   const comments = await prisma.comment.findMany({
     where: { postId: post.id },
     include: {
-      author: true
+      author: true,
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
-  });
+  })
 
-  const formattedComments: PostComment[] = comments.map(comment => ({
+  const formattedComments: PostComment[] = comments.map((comment) => ({
     ...comment,
-    authorName: comment.author?.name ?? 'Unknown Author',
-  }));
+    authorName: comment.author?.name ?? "Unknown Author",
+  }))
 
   let isLiked = false
-  isLiked = !!await prisma.like.findUnique({
+  isLiked = !!(await prisma.like.findUnique({
     where: { userId_postId: { userId: session.user.id, postId: post.id } },
-  })
+  }))
 
-  const isFavorited = !!await prisma.userFavorite.findUnique({
+  const isFavorited = !!(await prisma.userFavorite.findUnique({
     where: { userId_postId: { userId: session.user.id, postId: post.id } },
-  })
+  }))
   return (
     <div className="space-y-4">
       <PostBreadcrumb items={breadcrumbItems} />

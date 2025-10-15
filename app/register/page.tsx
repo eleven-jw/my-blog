@@ -1,7 +1,7 @@
-import { registerAction } from "./actions";
-import Link from "next/link";
+import { registerAction } from "./actions"
+import Link from "next/link"
 
-export const metadata = { title: "Register" };
+export const metadata = { title: "Register" }
 
 export default function RegisterPage() {
   return (
@@ -13,7 +13,9 @@ export default function RegisterPage() {
 
           <form action={registerAction} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
               <input
                 id="email"
                 name="email"
@@ -24,7 +26,9 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
@@ -37,7 +41,9 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirm" className="block text-sm font-medium text-gray-700">Confirm password</label>
+              <label htmlFor="confirm" className="block text-sm font-medium text-gray-700">
+                Confirm password
+              </label>
               <input
                 id="confirm"
                 name="confirm"
@@ -49,9 +55,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-md">Register</button>
+              <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-md">
+                Register
+              </button>
               <Link href="/login" className="text-sm text-sky-600 hover:underline">
-                  Have an account? Sign in
+                Have an account? Sign in
               </Link>
             </div>
           </form>
@@ -77,5 +85,5 @@ export default function RegisterPage() {
         />
       </div>
     </div>
-  );
+  )
 }

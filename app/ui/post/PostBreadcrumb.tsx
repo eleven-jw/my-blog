@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import React from 'react'
-import { usePathname } from 'next/navigation'
+import React from "react"
+import { usePathname } from "next/navigation"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,10 +17,10 @@ type BreadcrumbItemData = {
 }
 
 const DEFAULT_SEGMENT_MAP: Record<string, BreadcrumbItemData> = {
-  posts: { label: '文章管理', href: '/posts' },
-  create: { label: '新建文章' },
-  edit: { label: '编辑文章' },
-  explore: { label: '文章广场', href: '/explore' },
+  posts: { label: "文章管理", href: "/posts" },
+  create: { label: "新建文章" },
+  edit: { label: "编辑文章" },
+  explore: { label: "文章广场", href: "/explore" },
 }
 
 type PostBreadcrumbProps = {
@@ -29,11 +29,7 @@ type PostBreadcrumbProps = {
   className?: string
 }
 
-export default function PostBreadcrumb({
-  items,
-  appendItems,
-  className,
-}: PostBreadcrumbProps) {
+export default function PostBreadcrumb({ items, appendItems, className }: PostBreadcrumbProps) {
   const pathname = usePathname()
 
   const computedItems = React.useMemo(() => {
@@ -41,9 +37,9 @@ export default function PostBreadcrumb({
       return items
     }
 
-    const segments = pathname.split('/').filter(Boolean)
-    const result: BreadcrumbItemData[] = [{ label: '首页', href: '/' }]
-    let currentPath = ''
+    const segments = pathname.split("/").filter(Boolean)
+    const result: BreadcrumbItemData[] = [{ label: "首页", href: "/" }]
+    let currentPath = ""
 
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`
@@ -64,7 +60,7 @@ export default function PostBreadcrumb({
       const isLastBreadcrumb = isLastSegment && !hasAppend
       result.push({
         label: config.label,
-        href: isLastBreadcrumb ? undefined : config.href ?? currentPath,
+        href: isLastBreadcrumb ? undefined : (config.href ?? currentPath),
       })
     })
 

@@ -1,3 +1,3 @@
 export default function PostWritePage() {
-  return <div>Post Write Page</div>;
+  return <div>Post Write Page</div>
 }

@@ -1,21 +1,21 @@
-'use client';
+"use client"
 
 import { useMemo, useState } from "react"
 import { Tag } from "@/types/post"
 import { MAX_TAGS_PER_POST, TAG_NAME_MAX_LENGTH } from "@/lib/tagRules"
 
 interface TagInputProps {
-  selectedTags: Tag[];
-  existingTags: Tag[];
-  onToggleExistingTag: (tags: Tag) => void;
-  onAddNewTag: (tagName: string) => void;
-  onRemoveTag: (tag: Tag) => void;
+  selectedTags: Tag[]
+  existingTags: Tag[]
+  onToggleExistingTag: (tags: Tag) => void
+  onAddNewTag: (tagName: string) => void
+  onRemoveTag: (tag: Tag) => void
   maxTags?: number
   tagMaxLength?: number
-  error?: string;
+  error?: string
 }
 
-export default function TagInput ({
+export default function TagInput({
   selectedTags,
   existingTags,
   onToggleExistingTag,
@@ -25,7 +25,7 @@ export default function TagInput ({
   tagMaxLength = TAG_NAME_MAX_LENGTH,
   error,
 }: TagInputProps) {
-  const [inputTag, setInputTag] = useState('')
+  const [inputTag, setInputTag] = useState("")
 
   const suggestions = useMemo(() => {
     const map = new Map<string, Tag>()
@@ -40,14 +40,14 @@ export default function TagInput ({
   }
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault()
       const trimmed = inputTag.trim()
       if (!trimmed || selectedTags.length >= maxTags) {
         return
       }
       onAddNewTag(trimmed)
-      setInputTag('')
+      setInputTag("")
     }
   }
 
@@ -105,7 +105,7 @@ export default function TagInput ({
                 key={tag.id}
                 type="button"
                 className={`rounded-full px-3 py-1 text-sm transition ${
-                  isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                  isSelected ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200"
                 }`}
                 onClick={() => handleExistingTagClick(tag)}
               >

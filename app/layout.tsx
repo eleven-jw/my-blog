@@ -1,38 +1,36 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import ThemeWrapper from '@/app/lib/context/ThemeWrapper'
-import '@/app/lib/schedulePublisher'
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+import "./globals.css"
+import ThemeWrapper from "@/app/lib/context/ThemeWrapper"
+import "@/app/lib/schedulePublisher"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
+})
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
+})
 
 export const metadata: Metadata = {
   title: "My Blog",
   description: "A simple blog built with Next.js",
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <ThemeWrapper>
-          {children}
-        </ThemeWrapper>
+        <ThemeWrapper>{children}</ThemeWrapper>
       </body>
     </html>
-  );
+  )
 }

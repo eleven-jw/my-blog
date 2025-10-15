@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState, useTransition } from "react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { UserInfo } from "@/types/use"
 import { cn, formatDateTime } from "@/lib/utils"
 
-const FALLBACK_AVATAR = '/avatar.jpg'
+const FALLBACK_AVATAR = "/avatar.jpg"
 
 export type ProfileViewProps = {
   profile: UserInfo & {
@@ -25,8 +25,8 @@ export type ProfileViewProps = {
 export default function ProfileView({ profile, availableInterests }: ProfileViewProps) {
   const router = useRouter()
   const [isDialogOpen, setDialogOpen] = useState(false)
-  const [name, setName] = useState(profile.name ?? '')
-  const [email, setEmail] = useState(profile.email ?? '')
+  const [name, setName] = useState(profile.name ?? "")
+  const [email, setEmail] = useState(profile.email ?? "")
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [selectedInterests, setSelectedInterests] = useState<string[]>(profile.interests ?? [])
@@ -41,11 +41,11 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
     const src = profile.image?.trim()
     if (!src) return FALLBACK_AVATAR
 
-    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('/')) {
+    if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("/")) {
       return src
     }
 
-    return '/avatar.jpg'
+    return "/avatar.jpg"
   }, [previewUrl, profile.image])
 
   useEffect(() => {
@@ -58,8 +58,8 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
 
   function resetForm() {
     setDialogOpen(false)
-    setName(profile.name ?? '')
-    setEmail(profile.email ?? '')
+    setName(profile.name ?? "")
+    setEmail(profile.email ?? "")
     setAvatarFile(null)
     setPreviewUrl(null)
     setSelectedInterests(profile.interests ?? [])
@@ -67,8 +67,8 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
   }
 
   function openDialog() {
-    setName(profile.name ?? '')
-    setEmail(profile.email ?? '')
+    setName(profile.name ?? "")
+    setEmail(profile.email ?? "")
     setSelectedInterests(profile.interests ?? [])
     setAvatarFile(null)
     setPreviewUrl(null)
@@ -82,38 +82,38 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
     setError(null)
 
     const formData = new FormData()
-    formData.append('name', name.trim())
-    formData.append('email', email.trim())
+    formData.append("name", name.trim())
+    formData.append("email", email.trim())
     if (avatarFile) {
-      formData.append('avatar', avatarFile)
+      formData.append("avatar", avatarFile)
     }
     selectedInterests.forEach((interest) => {
-      formData.append('interests', interest)
+      formData.append("interests", interest)
     })
 
     startTransition(async () => {
       try {
-        const response = await fetch('/api/users/profile', {
-          method: 'PUT',
+        const response = await fetch("/api/users/profile", {
+          method: "PUT",
           body: formData,
         })
 
         if (!response.ok) {
-          throw new Error('保存个人资料失败')
+          throw new Error("保存个人资料失败")
         }
 
         const payload = await response.json()
         if (payload.code !== 200) {
-          throw new Error(payload.message || '保存个人资料失败')
+          throw new Error(payload.message || "保存个人资料失败")
         }
 
-        setSuccess('个人资料已更新')
+        setSuccess("个人资料已更新")
         setDialogOpen(false)
         setAvatarFile(null)
         setPreviewUrl(null)
         router.refresh()
       } catch (err) {
-        const message = err instanceof Error ? err.message : '保存个人资料失败'
+        const message = err instanceof Error ? err.message : "保存个人资料失败"
         setError(message)
       }
     })
@@ -127,14 +127,14 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
       return
     }
 
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"]
     if (!allowedTypes.includes(file.type)) {
-      setError('仅支持 PNG、JPG、WEBP 图片格式')
+      setError("仅支持 PNG、JPG、WEBP 图片格式")
       return
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setError('头像大小不能超过 2MB')
+      setError("头像大小不能超过 2MB")
       return
     }
 
@@ -145,7 +145,7 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
 
   function toggleInterest(tag: string) {
     setSelectedInterests((prev) =>
-      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
     )
   }
 
@@ -166,17 +166,16 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
               />
             </div>
             <div className="flex flex-col gap-1">
-              <h1 className="text-2xl font-semibold text-gray-900">{profile.name ?? 'User'}</h1>
-              <p className="text-sm text-gray-500">{profile.email ?? 'unlinked email'}</p>
-              <p className="text-xs text-gray-400">Role{profile.role ?? 'Normal'}</p>
+              <h1 className="text-2xl font-semibold text-gray-900">{profile.name ?? "User"}</h1>
+              <p className="text-sm text-gray-500">{profile.email ?? "unlinked email"}</p>
+              <p className="text-xs text-gray-400">Role{profile.role ?? "Normal"}</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 text-right text-sm text-gray-500">
-            {profile.createdAt && <span>join date:{formatDateTime(profile.createdAt) || '--'}</span>}
-            <Button
-              variant="outline"
-              onClick={openDialog}
-            >
+            {profile.createdAt && (
+              <span>join date:{formatDateTime(profile.createdAt) || "--"}</span>
+            )}
+            <Button variant="outline" onClick={openDialog}>
               EDIT
             </Button>
           </div>
@@ -241,8 +240,8 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
                   />
                   <div
                     className={cn(
-                      'absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white transition-opacity',
-                      isHoveringAvatar ? 'opacity-100' : 'opacity-0'
+                      "absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white transition-opacity",
+                      isHoveringAvatar ? "opacity-100" : "opacity-0",
                     )}
                   >
                     Upload
@@ -250,7 +249,7 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
                 </div>
                 <div className="flex-1 space-y-2 text-sm text-gray-500">
                   <p className="font-medium text-gray-900">click the image</p>
-                   <p>only support PNG / JPG / WEBP,no more than 2MB。</p>
+                  <p>only support PNG / JPG / WEBP,no more than 2MB。</p>
                 </div>
               </div>
               <input
@@ -300,10 +299,10 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
                         type="button"
                         onClick={() => toggleInterest(tag)}
                         className={cn(
-                          'rounded-full border px-3 py-1 text-sm transition',
+                          "rounded-full border px-3 py-1 text-sm transition",
                           active
-                            ? 'border-sky-500 bg-sky-50 text-sky-700'
-                            : 'border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600'
+                            ? "border-sky-500 bg-sky-50 text-sky-700"
+                            : "border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600",
                         )}
                       >
                         {tag}
@@ -321,10 +320,10 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
 
               <div className="flex items-center justify-end gap-3">
                 <Button type="button" variant="outline" onClick={resetForm} disabled={isPending}>
-          cancel
+                  cancel
                 </Button>
                 <Button type="submit" disabled={isPending}>
-          {isPending ? 'saving...' : 'save'}
+                  {isPending ? "saving..." : "save"}
                 </Button>
               </div>
             </form>

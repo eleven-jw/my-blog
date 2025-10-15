@@ -1,14 +1,14 @@
-import { getServerSession } from 'next-auth'
-import { redirect } from 'next/navigation'
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
-import { prisma } from '@/lib/prisma'
+import { prisma } from "@/lib/prisma"
 import ProfileView from "@/app/ui/profile/ProfileView"
 import { getInterestTags } from "@/app/lib/interests"
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    redirect('/login?callbackUrl=/profile')
+    redirect("/login?callbackUrl=/profile")
   }
 
   const [user, postCount, availableInterests] = await Promise.all([
@@ -38,7 +38,7 @@ export default async function ProfilePage() {
   ])
 
   if (!user) {
-    redirect('/login?error=user_not_found')
+    redirect("/login?error=user_not_found")
   }
 
   if (user.postCount !== postCount) {
