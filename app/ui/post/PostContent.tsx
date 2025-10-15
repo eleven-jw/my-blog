@@ -1,22 +1,13 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { HeartIcon } from '@heroicons/react/24/outline'
-import { BookmarkIcon as BookmarkOutlineIcon } from '@heroicons/react/24/outline'
-import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
-import { sanitizeForRender } from '@/lib/sanitizeHtml'
-import CommentSection from './CommentSection'
-import type { PostComment } from './types'
-
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(value)
-}
+import { useCallback, useMemo, useState } from "react"
+import { HeartIcon } from "@heroicons/react/24/outline"
+import { BookmarkIcon as BookmarkOutlineIcon } from "@heroicons/react/24/outline"
+import { BookmarkIcon as BookmarkSolidIcon } from "@heroicons/react/24/solid"
+import { sanitizeForRender } from "@/lib/sanitizeHtml"
+import { formatDateTime } from "@/lib/utils"
+import CommentSection from "./CommentSection"
+import type { PostComment } from "./types"
 
 type PostContentProps = {
   post: {
@@ -51,7 +42,16 @@ type FavoriteResponse = {
   message?: string
 }
 
-export default function PageContent({ post, initialLikeCount, isLiked, initialFavoriteCount, isFavorited, initialComments }: PostContentProps) {
+const emptyContentFallback = '<p class="text-gray-400">no content</p>'
+
+export default function PageContent({
+  post,
+  initialLikeCount,
+  isLiked,
+  initialFavoriteCount,
+  isFavorited,
+  initialComments,
+}: PostContentProps) {
   const [liked, setLiked] = useState<boolean>(isLiked)
   const [likeCount, setLikeCount] = useState<number>(initialLikeCount)
   const [favorited, setFavorited] = useState<boolean>(isFavorited)
@@ -59,13 +59,28 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
   const [comments, setComments] = useState<PostComment[]>(initialComments)
 
   const commentCount = comments.length
-  const tagNames = post.tags?.map((tag) => tag.name).filter(Boolean) ?? []
+  const tagNames = useMemo(
+    () => post.tags?.map((tag) => tag.name).filter(Boolean) ?? [],
+    [post.tags],
+  )
+  const createdAtText = useMemo(
+    () => formatDateTime(post.createdAt) || "--",
+    [post.createdAt],
+  )
+  const updatedAtText = useMemo(
+    () => formatDateTime(post.updatedAt) || "--",
+    [post.updatedAt],
+  )
+  const sanitizedContent = useMemo(
+    () => sanitizeForRender(post.content || emptyContentFallback),
+    [post.content],
+  )
 
-  const handleCommentsChange = (nextComments: PostComment[]) => {
+  const handleCommentsChange = useCallback((nextComments: PostComment[]) => {
     setComments(nextComments)
-  }
+  }, [])
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     try {
       const result = await fetch(`/api/posts/${post.id}/like`, {
         method: 'POST',
@@ -82,9 +97,9 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
     } catch (error) {
       console.error('failed to like:', error)
     }
-  }
+  }, [post.id])
 
-  const handleFavorite = async () => {
+  const handleFavorite = useCallback(async () => {
     try {
       const result = await fetch(`/api/posts/${post.id}/favorite`, {
         method: 'POST',
@@ -101,7 +116,7 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
     } catch (error) {
       console.error('failed to favorite:', error)
     }
-  }
+  }, [post.id])
 
   return (
     <>
@@ -111,8 +126,8 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span>autho:{post.author?.name ?? 'Unknown Author'}</span>
             <span>status:{post.status}</span>
-            <span>createdAt:{formatDate(post.createdAt)}</span>
-            <span>updatedAt:{formatDate(post.updatedAt)}</span>
+            <span>createdAt:{createdAtText}</span>
+            <span>updatedAt:{updatedAtText}</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
             <span>Views:{post.views ?? 0}</span>
@@ -130,7 +145,7 @@ export default function PageContent({ post, initialLikeCount, isLiked, initialFa
         <article
           className="prose max-w-none text-gray-700"
           dangerouslySetInnerHTML={{
-            __html: sanitizeForRender(post.content || '<p class="text-gray-400">no content</p>'),
+            __html: sanitizedContent,
           }}
         />
         <footer className="mt-8 flex justify-between border-t border-gray-200 pt-6 text-sm text-gray-500">
