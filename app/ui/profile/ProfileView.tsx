@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { UserInfo } from "@/types/use"
-import { cn } from "@/lib/utils"
+import { cn, formatDateTime } from "@/lib/utils"
 
 const FALLBACK_AVATAR = '/avatar.jpg'
 
@@ -172,7 +172,7 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 text-right text-sm text-gray-500">
-            {profile.createdAt && <span>join date:{formatDate(profile.createdAt)}</span>}
+            {profile.createdAt && <span>join date:{formatDateTime(profile.createdAt) || '--'}</span>}
             <Button
               variant="outline"
               onClick={openDialog}
@@ -347,10 +347,4 @@ function ProfileStat({ label, value }: ProfileStatProps) {
       <div className="mt-2 text-2xl font-semibold text-gray-900">{value}</div>
     </div>
   )
-}
-
-function formatDate(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return '--'
-  return new Intl.DateTimeFormat('zh-CN').format(date)
 }
