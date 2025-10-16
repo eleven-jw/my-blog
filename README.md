@@ -81,6 +81,9 @@ pnpm dev
 | `pnpm lint:fix`           | Run ESLint with auto-fix enabled                    |
 | `pnpm format`             | Check formatting with Prettier                      |
 | `pnpm format:write`       | Apply Prettier formatting to the codebase           |
+| `pnpm test`               | Execute the Vitest suite once (CI friendly)         |
+| `pnpm test:watch`         | Run tests continuously during development           |
+| `pnpm test:coverage`      | Generate coverage reports with Vitest               |
 | `pnpm prisma migrate dev` | Apply migrations and regenerate Prisma client       |
 
 ## Project Structure
