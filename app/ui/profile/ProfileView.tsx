@@ -190,7 +190,7 @@ export default function ProfileView({ profile, availableInterests }: ProfileView
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <ProfileStat label="Posts" value={profile.postCount ?? 0} />
-        <ProfileStat label="Fans" value={profile.fansCount ?? 0} />
+        {/* <ProfileStat label="Fans" value={profile.fansCount ?? 0} /> */}
         <ProfileStat label="Follows" value={profile.followsCount ?? 0} />
         <ProfileStat label="Favorites" value={profile.favoritesCount ?? 0} />
         <ProfileStat label="Views" value={profile.totalViews ?? 0} />
